@@ -1,5 +1,203 @@
 # @pancakeswap/smart-router
 
+## 7.0.2
+
+### Patch Changes
+
+- 8578d8f: Fix error throws when adjusting token output by gas cost
+- Updated dependencies [e02271e]
+  - @pancakeswap/gauges@2.0.4
+
+## 7.0.1
+
+### Patch Changes
+
+- 4181a79: Fix unable to fetch quote with wrapped native token as output
+
+## 7.0.0
+
+### Major Changes
+
+- 36f8955: Update packages
+
+### Patch Changes
+
+- Updated dependencies [b529b61]
+- Updated dependencies [36f8955]
+  - @pancakeswap/gauges@2.0.3
+  - @pancakeswap/stable-swap-sdk@2.0.0
+  - @pancakeswap/sdk@5.8.10
+  - @pancakeswap/multicall@3.5.10
+  - @pancakeswap/tokens@0.6.29
+  - @pancakeswap/v3-sdk@3.8.13
+  - @pancakeswap/v4-sdk@0.1.6
+
+## 6.2.1
+
+### Patch Changes
+
+- Updated dependencies [6a9fd57]
+  - @pancakeswap/v4-sdk@0.1.5
+
+## 6.2.0
+
+### Minor Changes
+
+- 176eb10: Add v4 pool types
+- 176eb10: Introduce v4 liquidity pools
+
+### Patch Changes
+
+- Updated dependencies [176eb10]
+- Updated dependencies [176eb10]
+  - @pancakeswap/swap-sdk-core@1.3.0
+  - @pancakeswap/stable-swap-sdk@1.1.4
+  - @pancakeswap/sdk@5.8.9
+  - @pancakeswap/token-lists@0.0.14
+  - @pancakeswap/v3-sdk@3.8.12
+  - @pancakeswap/v4-sdk@0.1.4
+  - @pancakeswap/gauges@2.0.2
+  - @pancakeswap/multicall@3.5.9
+  - @pancakeswap/tokens@0.6.28
+
+## 6.1.6
+
+### Patch Changes
+
+- Updated dependencies [bab8589]
+- Updated dependencies [447ceb3]
+  - @pancakeswap/gauges@2.0.1
+
+## 6.1.5
+
+### Patch Changes
+
+- 3e83a9c: Read gauge list from remote endpoint
+- Updated dependencies [3e83a9c]
+  - @pancakeswap/gauges@2.0.0
+
+## 6.1.4
+
+### Patch Changes
+
+- Updated dependencies [8218dbf]
+  - @pancakeswap/tokens@0.6.27
+  - @pancakeswap/gauges@1.2.17
+  - @pancakeswap/stable-swap-sdk@1.1.3
+
+## 6.1.3
+
+### Patch Changes
+
+- Updated dependencies [f3e8a77]
+- Updated dependencies [72fb1db]
+  - @pancakeswap/token-lists@0.0.13
+  - @pancakeswap/gauges@1.2.16
+  - @pancakeswap/tokens@0.6.26
+  - @pancakeswap/stable-swap-sdk@1.1.2
+
+## 6.1.2
+
+### Patch Changes
+
+- Updated dependencies [75c16bc]
+  - @pancakeswap/stable-swap-sdk@1.1.1
+
+## 6.1.1
+
+### Patch Changes
+
+- 618ad06: Introduce routing sdk quoter addon
+- Updated dependencies [206fc8d]
+- Updated dependencies [6d4ecf0]
+  - @pancakeswap/stable-swap-sdk@1.1.0
+  - @pancakeswap/gauges@1.2.15
+  - @pancakeswap/tokens@0.6.25
+
+## 6.1.0
+
+### Minor Changes
+
+- b1d1eaf: Introduce routing sdk addons
+
+### Patch Changes
+
+- Updated dependencies [103dd63]
+- Updated dependencies [c6e9e02]
+  - @pancakeswap/stable-swap-sdk@1.0.16
+  - @pancakeswap/tokens@0.6.24
+  - @pancakeswap/gauges@1.2.14
+
+## 6.0.17
+
+### Patch Changes
+
+- Updated dependencies [f551e5e]
+  - @pancakeswap/swap-sdk-core@1.2.0
+  - @pancakeswap/stable-swap-sdk@1.0.15
+  - @pancakeswap/sdk@5.8.8
+  - @pancakeswap/token-lists@0.0.12
+  - @pancakeswap/v3-sdk@3.8.11
+  - @pancakeswap/gauges@1.2.13
+  - @pancakeswap/multicall@3.5.8
+  - @pancakeswap/tokens@0.6.23
+
+## 6.0.16
+
+### Patch Changes
+
+- Updated dependencies [911d107]
+  - @pancakeswap/v3-sdk@3.8.10
+  - @pancakeswap/gauges@1.2.12
+
+## 6.0.15
+
+### Patch Changes
+
+- Updated dependencies [fe96bb1]
+  - @pancakeswap/v3-sdk@3.8.9
+  - @pancakeswap/gauges@1.2.11
+
+## 6.0.14
+
+### Patch Changes
+
+- Updated dependencies [4628ab7]
+- Updated dependencies [8f573cf]
+  - @pancakeswap/tokens@0.6.22
+  - @pancakeswap/gauges@1.2.10
+  - @pancakeswap/stable-swap-sdk@1.0.14
+
+## 6.0.13
+
+### Patch Changes
+
+- Updated dependencies [9a16780]
+  - @pancakeswap/chains@0.4.6
+  - @pancakeswap/gauges@1.2.9
+  - @pancakeswap/multicall@3.5.7
+  - @pancakeswap/stable-swap-sdk@1.0.13
+  - @pancakeswap/sdk@5.8.7
+  - @pancakeswap/tokens@0.6.21
+  - @pancakeswap/v3-sdk@3.8.8
+  - @pancakeswap/token-lists@0.0.11
+
+## 6.0.12
+
+### Patch Changes
+
+- Updated dependencies [b9c91d1]
+- Updated dependencies [5fa28e0]
+- Updated dependencies [95cfa0c]
+  - @pancakeswap/chains@0.4.5
+  - @pancakeswap/tokens@0.6.20
+  - @pancakeswap/gauges@1.2.8
+  - @pancakeswap/multicall@3.5.6
+  - @pancakeswap/stable-swap-sdk@1.0.12
+  - @pancakeswap/sdk@5.8.6
+  - @pancakeswap/v3-sdk@3.8.7
+  - @pancakeswap/token-lists@0.0.11
+
 ## 6.0.11
 
 ### Patch Changes

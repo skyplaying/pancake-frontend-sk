@@ -1,19 +1,17 @@
 import { styled } from 'styled-components'
 
-import { checkIsBoostedPool } from '@pancakeswap/pools'
-import { Flex, FlexLayout, Heading, Image, Link, Loading, PageHeader, Text, ViewMode } from '@pancakeswap/uikit'
-import { Pool } from '@pancakeswap/widgets-internal'
-import { useAccount } from 'wagmi'
-
 import { ChainId } from '@pancakeswap/chains'
 import { useTranslation } from '@pancakeswap/localization'
+import { checkIsBoostedPool } from '@pancakeswap/pools'
 import { Token } from '@pancakeswap/sdk'
+import { Flex, FlexLayout, Heading, Image, Link, Loading, PageHeader, Text, ViewMode } from '@pancakeswap/uikit'
+import { Pool } from '@pancakeswap/widgets-internal'
 import ConnectWalletButton from 'components/ConnectWalletButton'
 import Page from 'components/Layout/Page'
-import { V3SubgraphHealthIndicator } from 'components/SubgraphHealthIndicator'
 import { TokenPairImage } from 'components/TokenImage'
 import { useActiveChainId } from 'hooks/useActiveChainId'
 import { usePoolsPageFetch, usePoolsWithVault } from 'state/pools/hooks'
+import { useAccount } from 'wagmi'
 
 import CakeVaultCard from './components/CakeVaultCard'
 import AprRow from './components/PoolCard/AprRow'

@@ -4,7 +4,6 @@ import { useAccountLocalEventListener } from 'hooks/useAccountLocalEventListener
 import { useEffect, useRef } from 'react'
 import { useChartView, useIsChartPaneOpen } from 'state/predictions/hooks'
 import { useUserPredictionChainlinkChartDisclaimerShow, useUserPredictionChartDisclaimerShow } from 'state/user/hooks'
-
 import Desktop from './Desktop'
 import Mobile from './Mobile'
 import ChainlinkChartDisclaimer from './components/ChainlinkChartDisclaimer'
@@ -12,6 +11,7 @@ import ChartDisclaimer from './components/ChartDisclaimer'
 import CollectWinningsPopup from './components/CollectWinningsPopup'
 import Container from './components/Container'
 import RiskDisclaimer from './components/RiskDisclaimer'
+import { useConfig } from './context/ConfigProvider'
 import SwiperProvider from './context/SwiperProvider'
 import usePollPredictions from './hooks/usePollPredictions'
 
@@ -20,6 +20,7 @@ function Warnings() {
   const [showChainlinkDisclaimer] = useUserPredictionChainlinkChartDisclaimerShow()
   const isChartPaneOpen = useIsChartPaneOpen()
   const chartView = useChartView()
+  const config = useConfig()
 
   const [onPresentChartDisclaimer] = useModal(<ChartDisclaimer />, false)
   const [onPresentChainlinkChartDisclaimer] = useModal(<ChainlinkChartDisclaimer />, false)
@@ -37,10 +38,21 @@ function Warnings() {
 
   // Chainlink Disclaimer
   useEffect(() => {
-    if (isChartPaneOpen && showChainlinkDisclaimer && chartView === PredictionsChartView.Chainlink) {
+    if (
+      isChartPaneOpen &&
+      showChainlinkDisclaimer &&
+      chartView === PredictionsChartView.Chainlink &&
+      config?.chainlinkOracleAddress
+    ) {
       onPresentChainlinkChartDisclaimerRef.current()
     }
-  }, [onPresentChainlinkChartDisclaimerRef, isChartPaneOpen, showChainlinkDisclaimer, chartView])
+  }, [
+    onPresentChainlinkChartDisclaimerRef,
+    isChartPaneOpen,
+    showChainlinkDisclaimer,
+    chartView,
+    config?.chainlinkOracleAddress,
+  ])
 
   return null
 }
@@ -53,16 +65,14 @@ const Predictions = () => {
   usePollPredictions()
 
   return (
-    <>
-      <Warnings />
-      <RiskDisclaimer />
-      <SwiperProvider>
-        <Container>
-          {isDesktop ? <Desktop /> : <Mobile />}
-          <CollectWinningsPopup />
-        </Container>
-      </SwiperProvider>
-    </>
+    <SwiperProvider>
+      <Container>
+        <Warnings />
+        <RiskDisclaimer />
+        {isDesktop ? <Desktop /> : <Mobile />}
+        <CollectWinningsPopup />
+      </Container>
+    </SwiperProvider>
   )
 }
 

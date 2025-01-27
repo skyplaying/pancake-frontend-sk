@@ -1,5 +1,108 @@
 # @pancakeswap/prediction
 
+## 1.1.8
+
+### Patch Changes
+
+- Updated dependencies [36f8955]
+  - @pancakeswap/sdk@5.8.10
+  - @pancakeswap/tokens@0.6.29
+  - @pancakeswap/pools@5.1.36
+
+## 1.1.7
+
+### Patch Changes
+
+- @pancakeswap/sdk@5.8.9
+- @pancakeswap/tokens@0.6.28
+- @pancakeswap/pools@5.1.35
+
+## 1.1.6
+
+### Patch Changes
+
+- Updated dependencies [8218dbf]
+  - @pancakeswap/tokens@0.6.27
+  - @pancakeswap/pools@5.1.34
+
+## 1.1.5
+
+### Patch Changes
+
+- Updated dependencies [72fb1db]
+  - @pancakeswap/tokens@0.6.26
+  - @pancakeswap/pools@5.1.33
+
+## 1.1.4
+
+### Patch Changes
+
+- Updated dependencies [b0d3ac4]
+- Updated dependencies [6d4ecf0]
+  - @pancakeswap/pools@5.1.32
+  - @pancakeswap/tokens@0.6.25
+
+## 1.1.3
+
+### Patch Changes
+
+- Updated dependencies [103dd63]
+- Updated dependencies [1c1d186]
+- Updated dependencies [c6e9e02]
+  - @pancakeswap/tokens@0.6.24
+  - @pancakeswap/pools@5.1.31
+
+## 1.1.2
+
+### Patch Changes
+
+- @pancakeswap/sdk@5.8.8
+- @pancakeswap/tokens@0.6.23
+- @pancakeswap/pools@5.1.30
+
+## 1.1.1
+
+### Patch Changes
+
+- Updated dependencies [bf07bfa]
+  - @pancakeswap/pools@5.1.29
+
+## 1.1.0
+
+### Minor Changes
+
+- 76f049e: Add AI Predictions on Arbitrum
+
+### Patch Changes
+
+- Updated dependencies [4628ab7]
+- Updated dependencies [8f573cf]
+  - @pancakeswap/tokens@0.6.22
+  - @pancakeswap/pools@5.1.28
+
+## 1.0.16
+
+### Patch Changes
+
+- Updated dependencies [7235e91]
+- Updated dependencies [9a16780]
+  - @pancakeswap/pools@5.1.27
+  - @pancakeswap/chains@0.4.6
+  - @pancakeswap/sdk@5.8.7
+  - @pancakeswap/tokens@0.6.21
+
+## 1.0.15
+
+### Patch Changes
+
+- Updated dependencies [b9c91d1]
+- Updated dependencies [5fa28e0]
+- Updated dependencies [95cfa0c]
+  - @pancakeswap/chains@0.4.5
+  - @pancakeswap/tokens@0.6.20
+  - @pancakeswap/pools@5.1.26
+  - @pancakeswap/sdk@5.8.6
+
 ## 1.0.14
 
 ### Patch Changes

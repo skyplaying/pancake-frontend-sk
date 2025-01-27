@@ -12,7 +12,7 @@ import { useBCakeBoostLimitAndLockInfo } from 'views/Farms/components/YieldBoost
 /* eslint-disable no-case-declarations */
 import { useDelayedUnmount } from '@pancakeswap/hooks'
 import { useTranslation } from '@pancakeswap/localization'
-import { Flex, useMatchBreakpoints } from '@pancakeswap/uikit'
+import { Box, Flex, useMatchBreakpoints } from '@pancakeswap/uikit'
 import { useCurrencyUsdPrice } from 'hooks/useCurrencyUsdPrice'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useIsWrapperWhiteList } from '../../hooks/useWrapperBooster'
@@ -75,7 +75,6 @@ export const TableRow: React.FC<Props> = ({ config, farmsV3, aprDataList, update
     name,
     strategy,
     feeTier,
-    autoFarm,
     manager,
     address,
     adapterAddress,
@@ -122,7 +121,7 @@ export const TableRow: React.FC<Props> = ({ config, farmsV3, aprDataList, update
   const info = usePositionInfo(bCakeWrapperAddress ?? address, adapterAddress ?? '0x', Boolean(bCakeWrapperAddress))
 
   const tokensPriceUSD = useMemo(() => {
-    const farm = farmsV3.find((d) => d.pid === priceFromV3FarmPid)
+    const farm = priceFromV3FarmPid ? farmsV3.find((d) => d.pid === priceFromV3FarmPid) : undefined
     if (!farm)
       return {
         token0: token0Usd.data ?? 0,
@@ -194,6 +193,8 @@ export const TableRow: React.FC<Props> = ({ config, farmsV3, aprDataList, update
     rewardEndTime: info.endTimestamp,
     rewardStartTime: info.startTimestamp,
     farmRewardAmount: aprDataInfo?.info?.rewardAmount ?? 0,
+    adapterAddress,
+    bCakeWrapperAddress,
   })
 
   const staked0Amount = info?.userToken0Amounts
@@ -258,7 +259,6 @@ export const TableRow: React.FC<Props> = ({ config, farmsV3, aprDataList, update
                         currencyB={currencyB}
                         vaultName={vaultName}
                         feeTier={feeTier}
-                        autoFarm={autoFarm}
                         autoCompound={autoCompound}
                         isSingleDepositToken={isSingleDepositToken}
                         allowDepositToken1={allowDepositToken1 ?? false}
@@ -362,19 +362,22 @@ export const TableRow: React.FC<Props> = ({ config, farmsV3, aprDataList, update
         <>
           <tr style={{ cursor: 'pointer' }} onClick={toggleActionPanel}>
             <FarmMobileCell colSpan={3}>
-              <Flex justifyContent="flex-start" alignItems="center">
+              <Flex justifyContent="flex-start" alignItems="center" position="relative">
                 <FarmCell
                   currencyA={currencyA}
                   currencyB={currencyB}
                   vaultName={vaultName}
                   feeTier={feeTier}
-                  autoFarm={autoFarm}
                   autoCompound={autoCompound}
                   isSingleDepositToken={isSingleDepositToken}
                   allowDepositToken1={allowDepositToken1 ?? false}
                   isBooster={isBoosterWhiteList && apr?.isInCakeRewardDateRange}
                 />
-                {hasSwellReward ? <SwellTooltip /> : null}
+                {hasSwellReward ? (
+                  <Box position="absolute" right="10px">
+                    <SwellTooltip />
+                  </Box>
+                ) : null}
               </Flex>
             </FarmMobileCell>
           </tr>
@@ -463,6 +466,7 @@ export const TableRow: React.FC<Props> = ({ config, farmsV3, aprDataList, update
               aprTimeWindow={aprDataInfo.timeWindow}
               bCakeWrapper={bCakeWrapperAddress}
               minDepositUSD={minDepositUSD}
+              adapterAddress={adapterAddress}
               isBooster={isBoosterWhiteList}
               boosterContractAddress={info?.boosterContractAddress}
             />

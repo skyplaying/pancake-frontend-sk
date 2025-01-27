@@ -2,9 +2,20 @@ import { ChainId } from '@pancakeswap/chains'
 import { Currency } from '@pancakeswap/sdk'
 import { TokenAddressMap } from '@pancakeswap/token-lists'
 import memoize from 'lodash/memoize'
-import { Address, getAddress } from 'viem'
+import { multiChainScanName } from 'state/info/constant'
+import { Address } from 'viem'
 import { bsc } from 'wagmi/chains'
+import { checksumAddress } from './checksumAddress'
 import { chains } from './wagmi'
+
+export const isAddressEqual = (a?: any, b?: any) => {
+  if (!a || !b) return false
+  const a_ = safeGetAddress(a)
+  if (!a_) return false
+  const b_ = safeGetAddress(b)
+  if (!b_) return false
+  return a_ === b_
+}
 
 // returns the checksummed address if the address is valid, otherwise returns undefined
 export const safeGetAddress = memoize((value: any): Address | undefined => {
@@ -13,7 +24,7 @@ export const safeGetAddress = memoize((value: any): Address | undefined => {
     if (typeof value === 'string' && !value.startsWith('0x')) {
       value_ = `0x${value}`
     }
-    return getAddress(value_)
+    return checksumAddress(value_)
   } catch {
     return undefined
   }
@@ -50,7 +61,7 @@ export function getBlockExploreName(chainIdOverride?: number) {
   const chainId = chainIdOverride || ChainId.BSC
   const chain = chains.find((c) => c.id === chainId)
 
-  return chain?.blockExplorers?.default.name || bsc.blockExplorers.default.name
+  return multiChainScanName[chain?.id || -1] || chain?.blockExplorers?.default.name || bsc.blockExplorers.default.name
 }
 
 export function getBscScanLinkForNft(collectionAddress: string | undefined, tokenId?: string): string {

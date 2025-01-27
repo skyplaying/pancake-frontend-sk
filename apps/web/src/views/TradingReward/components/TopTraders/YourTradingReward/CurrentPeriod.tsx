@@ -41,7 +41,7 @@ const CurrentPeriod: React.FC<React.PropsWithChildren<CurrentPeriodProps>> = ({
     t,
     currentLanguage: { locale },
   } = useTranslation()
-  const cakePriceBusd = useCakePrice()
+  const cakePrice = useCakePrice()
   const { data: rank } = useUserTradeRank({ campaignId: currentUserCampaignInfo?.campaignId ?? '' })
 
   const currentDate = Date.now() / 1000
@@ -65,7 +65,7 @@ const CurrentPeriod: React.FC<React.PropsWithChildren<CurrentPeriodProps>> = ({
     timeRemaining,
     totalEstimateRewardUSD: currentUserCampaignInfo?.totalEstimateRewardUSD ?? 0,
     totalReward: currentUserCampaignInfo?.canClaim ?? '0',
-    cakePriceBusd,
+    cakePrice,
     rewardPrice: currentRewardInfo?.rewardPrice ?? '0',
     rewardTokenDecimal: currentRewardInfo?.rewardTokenDecimal ?? 0,
   })
@@ -126,7 +126,7 @@ const CurrentPeriod: React.FC<React.PropsWithChildren<CurrentPeriodProps>> = ({
                       {t('Keep trading to rank')}
                     </Text>
                     <Text fontSize="14px" color="primary" as="span" bold m="0 4px">
-                      {t('#100 or less')}
+                      {t('#300 or less')}
                     </Text>
                     <Text fontSize="14px" color="primary" as="span">
                       {t('and maintain till the end of the campaign to win and claim your rewards.')}

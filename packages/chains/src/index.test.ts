@@ -4,12 +4,17 @@ import * as exports from './index'
 test('exports', () => {
   expect(Object.keys(exports)).toMatchInlineSnapshot(`
     [
+      "AVERAGE_CHAIN_BLOCK_TIMES",
       "ChainId",
       "testnetChainIds",
       "chainNames",
+      "chainNamesInKebabCase",
+      "mainnetChainNamesInKebabCase",
       "chainNameToChainId",
       "defiLlamaChainNames",
       "getChainName",
+      "getChainNameInKebabCase",
+      "getMainnetChainNameInKebabCase",
       "getLlamaChainName",
       "getChainIdByChainName",
       "isTestnetChainId",

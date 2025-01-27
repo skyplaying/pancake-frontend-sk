@@ -1,5 +1,62 @@
 # @pancakeswap/pcsx-sdk
 
+## 1.0.2
+
+### Patch Changes
+
+- @pancakeswap/permit2-sdk@1.0.12
+
+## 1.0.1
+
+### Patch Changes
+
+- Updated dependencies [176eb10]
+- Updated dependencies [176eb10]
+  - @pancakeswap/swap-sdk-core@1.3.0
+  - @pancakeswap/permit2-sdk@1.0.11
+
+## 1.0.0
+
+### Major Changes
+
+- c227943: add eth reactor
+
+## 0.0.13
+
+### Patch Changes
+
+- 6418fde: update address
+
+## 0.0.12
+
+### Patch Changes
+
+- Updated dependencies [f551e5e]
+  - @pancakeswap/swap-sdk-core@1.2.0
+  - @pancakeswap/permit2-sdk@1.0.10
+
+## 0.0.11
+
+### Patch Changes
+
+- 42be6fc: add input and outputs decay
+
+## 0.0.10
+
+### Patch Changes
+
+- Updated dependencies [9a16780]
+  - @pancakeswap/chains@0.4.6
+  - @pancakeswap/permit2-sdk@1.0.9
+
+## 0.0.9
+
+### Patch Changes
+
+- Updated dependencies [b9c91d1]
+  - @pancakeswap/chains@0.4.5
+  - @pancakeswap/permit2-sdk@1.0.8
+
 ## 0.0.8
 
 ### Patch Changes

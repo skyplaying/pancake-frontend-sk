@@ -25,13 +25,20 @@ export const SwapFeaturesContext = createContext<{
   setIsChartDisplayed: null,
 })
 
-const CHART_SUPPORT_CHAIN_IDS = [
-  ChainId.BSC,
-  ChainId.BSC_TESTNET,
-  // ChainId.ETHEREUM
+// NOTE: Commented out until charts are supported again
+const CHART_SUPPORT_CHAIN_IDS: ChainId[] = [
+  // ChainId.BSC,
+  // ChainId.BSC_TESTNET,
+  // ChainId.ETHEREUM,
+  // ChainId.ARBITRUM_ONE,
+  // ChainId.BASE,
+  // ChainId.LINEA,
+  // ChainId.POLYGON_ZKEVM,
+  // ChainId.OPBNB,
+  // ChainId.ZKSYNC,
 ]
 const STABLE_SUPPORT_CHAIN_IDS = [ChainId.BSC_TESTNET, ChainId.BSC]
-const HOT_TOKEN_SUPPORT_CHAIN_IDS = [ChainId.BSC, ChainId.ETHEREUM]
+// const HOT_TOKEN_SUPPORT_CHAIN_IDS = [ChainId.BSC, ChainId.ETHEREUM]
 
 export const SwapFeaturesProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
   const { isMobile } = useMatchBreakpoints()
@@ -53,10 +60,7 @@ export const SwapFeaturesProvider: React.FC<React.PropsWithChildren> = ({ childr
     [chainId],
   )
 
-  const isHotTokenSupported = useMemo(
-    () => Boolean(chainId && HOT_TOKEN_SUPPORT_CHAIN_IDS.includes(chainId)),
-    [chainId],
-  )
+  const isHotTokenSupported = useMemo(() => false, [])
 
   const value = useMemo(() => {
     return {

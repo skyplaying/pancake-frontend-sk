@@ -92,8 +92,40 @@ const walletsConfig = <config extends Config = Config, context = unknown>({
       downloadLink: 'https://metamask.app.link/dapp/pancakeswap.finance/',
     },
     {
+      id: 'trust',
+      title: 'Trust Wallet',
+      icon: `${ASSET_CDN}/web/wallets/trust.png`,
+      connectorId: ConnectorNames.TrustWallet,
+      get installed() {
+        return !!getTrustWalletProvider()
+      },
+      deepLink: 'https://link.trustwallet.com/open_url?coin_id=20000714&url=https://pancakeswap.finance/',
+      downloadLink: 'https://trustwallet.com/browser-extension',
+      guide: {
+        desktop: 'https://trustwallet.com/browser-extension',
+        mobile: 'https://trustwallet.com/',
+      },
+      qrCode,
+    },
+    {
+      id: 'okx',
+      title: 'OKX Wallet',
+      icon: `${ASSET_CDN}/web/wallets/okx-wallet.png`,
+      connectorId: ConnectorNames.Injected,
+      get installed() {
+        return typeof window !== 'undefined' && Boolean(window.okxwallet)
+      },
+      downloadLink: 'https://www.okx.com/download',
+      deepLink:
+        'https://www.okx.com/download?deeplink=okx%3A%2F%2Fwallet%2Fdapp%2Furl%3FdappUrl%3Dhttps%253A%252F%252Fpancakeswap.finance',
+      guide: {
+        desktop: 'https://www.okx.com/web3',
+        mobile: 'https://www.okx.com/web3',
+      },
+    },
+    {
       id: 'BinanceW3W',
-      title: 'Binance Web3 Wallet',
+      title: 'Binance Wallet',
       icon: `${ASSET_CDN}/web/wallets/binance-w3w.png`,
       connectorId: isBinanceWeb3WalletInstalled() ? ConnectorNames.Injected : ConnectorNames.BinanceW3W,
       get installed() {
@@ -104,44 +136,11 @@ const walletsConfig = <config extends Config = Config, context = unknown>({
         return undefined
       },
     },
-    // {
-    //   id: 'binance',
-    //   title: 'Binance Wallet',
-    //   icon: `${ASSET_CDN}/web/wallets/binance.png`,
-    //   get installed() {
-    //     return typeof window !== 'undefined' && Boolean(window.BinanceChain)
-    //   },
-    //   connectorId: ConnectorNames.BSC,
-    //   guide: {
-    //     desktop: 'https://www.bnbchain.org/en/binance-wallet',
-    //   },
-    //   downloadLink: {
-    //     desktop: isFirefox
-    //       ? 'https://addons.mozilla.org/en-US/firefox/addon/binance-chain/?src=search'
-    //       : 'https://chrome.google.com/webstore/detail/binance-wallet/fhbohimaelbohpjbbldcngcnapndodjp',
-    //   },
-    // },
     {
       id: 'coinbase',
       title: 'Coinbase Wallet',
       icon: `${ASSET_CDN}/web/wallets/coinbase.png`,
       connectorId: ConnectorNames.WalletLink,
-    },
-    {
-      id: 'trust',
-      title: 'Trust Wallet',
-      icon: `${ASSET_CDN}/web/wallets/trust.png`,
-      connectorId: ConnectorNames.TrustWallet,
-      get installed() {
-        return !!getTrustWalletProvider()
-      },
-      deepLink: 'https://link.trustwallet.com/open_url?coin_id=20000714&url=https://pancakeswap.finance/',
-      downloadLink: 'https://chrome.google.com/webstore/detail/trust-wallet/egjidjbpglichdcondbcbdnbeeppgdph',
-      guide: {
-        desktop: 'https://trustwallet.com/browser-extension',
-        mobile: 'https://trustwallet.com/',
-      },
-      qrCode,
     },
     {
       id: 'walletconnect',
@@ -181,7 +180,7 @@ const walletsConfig = <config extends Config = Config, context = unknown>({
         desktop: 'https://rabby.io/',
       },
       downloadLink: {
-        desktop: 'https://chrome.google.com/webstore/detail/rabby/acmacodkjbdgmoleebolmdjonilkdbch',
+        desktop: 'https://rabby.io/',
       },
     },
     {
@@ -212,8 +211,7 @@ const walletsConfig = <config extends Config = Config, context = unknown>({
       get installed() {
         return typeof window !== 'undefined' && Boolean((window.ethereum as ExtendEthereum)?.isSafePal)
       },
-      downloadLink:
-        'https://chrome.google.com/webstore/detail/safepal-extension-wallet/lgmpcpglpngdoalbgeoldeajfclnhafa',
+      downloadLink: 'https://safepal.com/en/extension',
       qrCode,
     },
     {

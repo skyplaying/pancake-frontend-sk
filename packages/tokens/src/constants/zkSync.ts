@@ -13,6 +13,7 @@ export const zksyncTokens = {
     6,
     'USDC',
     'USD Coin (Native)',
+    'https://www.centre.io/usdc',
   ),
   tes: new ERC20Token(
     ChainId.ZKSYNC,
@@ -22,7 +23,14 @@ export const zksyncTokens = {
     'Tiny Era Shard',
     'https://tinyworlds.io/',
   ),
-  wbtc: new ERC20Token(ChainId.ZKSYNC, '0xBBeB516fb02a01611cBBE0453Fe3c580D7281011', 8, 'WBTC', 'Wrapped BTC'),
+  wbtc: new ERC20Token(
+    ChainId.ZKSYNC,
+    '0xBBeB516fb02a01611cBBE0453Fe3c580D7281011',
+    8,
+    'WBTC',
+    'Wrapped BTC',
+    'https://wbtc.network/',
+  ),
   busd: new ERC20Token(
     ChainId.ZKSYNC,
     '0x2039bb4116B4EFc145Ec4f0e2eA75012D6C0f181',
@@ -37,7 +45,7 @@ export const zksyncTokens = {
     18,
     'rETH',
     'Rocket Pool ETH',
-    'https://www.paxos.com/busd/',
+    'https://rocketpool.net/',
   ),
   usdPlus: new ERC20Token(
     ChainId.ZKSYNC,
@@ -45,7 +53,7 @@ export const zksyncTokens = {
     6,
     'USD+',
     'USD Plus',
-    'http://usdplus.co',
+    'https://overnight.fi/',
   ),
   wstETH: new ERC20Token(
     ChainId.ZKSYNC,
@@ -90,7 +98,7 @@ export const zksyncTokens = {
   usdtPlus: new ERC20Token(
     ChainId.ZKSYNC,
     '0xBb8D60008A08b1828E02120F1a952D295036eF3d',
-    7,
+    6,
     'USDT+',
     'USDT+',
     'https://overnight.fi/',
@@ -102,5 +110,29 @@ export const zksyncTokens = {
     'HOLD',
     'Holdstation',
     'https://holdstation.com/',
+  ),
+  zk: new ERC20Token(
+    ChainId.ZKSYNC,
+    '0x5A7d6b2F92C77FAD6CCaBd7EE0624E64907Eaf3E',
+    18,
+    'ZK',
+    'zkSync',
+    'https://zksync.io/',
+  ),
+  zke: new ERC20Token(
+    ChainId.ZKSYNC,
+    '0x7b3e1236c39ddD2e61cF6Da6ac6D11193238ccB0',
+    18,
+    'ZKE',
+    'ZKE',
+    'https://zkera.fi/',
+  ),
+  rf: new ERC20Token(
+    ChainId.ZKSYNC,
+    '0x5f7CBcb391d33988DAD74D6Fd683AadDA1123E4D',
+    18,
+    'RF',
+    'ReactorFusion',
+    'https://reactorfusion.xyz/',
   ),
 }

@@ -2,10 +2,8 @@ import { ChainId } from '@pancakeswap/chains'
 import { queryOptions, type QueryFunction } from '@tanstack/react-query'
 import createClient, { type MaybeOptionalInit, type Middleware } from 'openapi-fetch'
 import type { HasRequiredKeys, PathsWithMethod } from 'openapi-typescript-helpers'
-import { createQueryKey } from 'views/BuyCrypto/types'
+import { createQueryKey } from 'utils/reactQuery'
 import type { paths } from './schema.d'
-
-export const enableExplorer = true
 
 const endpoints = process.env.NEXT_PUBLIC_EXPLORE_API_ENDPOINT || 'http://localhost:4123'
 
@@ -86,11 +84,8 @@ export function createExplorerQuery<
 }
 
 export const chartPeriodRange = ['1H', '1D', '1W', '1M', '1Y'] as const
+
 export type ChartPeriod = (typeof chartPeriodRange)[number]
-
-export const chartGroupBy = ['1D', '1W', '1M'] as const
-
-export type ChartGroupBy = (typeof chartGroupBy)[number]
 
 export const chainIdToExplorerInfoChainName = {
   [ChainId.BSC]: 'bsc',

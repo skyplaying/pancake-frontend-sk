@@ -11,7 +11,8 @@ import { Token } from '@pancakeswap/swap-sdk-core'
 import { bscTokens } from '@pancakeswap/tokens'
 import { GiftTooltip } from 'components/GiftTooltip/GiftTooltip'
 import styled from 'styled-components'
-import { Address, isAddressEqual } from 'viem'
+import { isAddressEqual } from 'utils'
+import { Address } from 'viem'
 import { bsc } from 'viem/chains'
 import { useIsUserDelegated } from 'views/CakeStaking/hooks/useIsUserDelegated'
 import { useChainId } from 'wagmi'
@@ -113,8 +114,8 @@ const PoolRow: React.FC<React.PropsWithChildren<{ sousId: number; account: strin
         <Box>
           <Text lineHeight="110%" as="span">
             {t("Enjoying the APR? Get more PEPE rewards in next month's Syrup Pool by staking more PEPE-BNB LP in our")}
-            <Link ml="4px" lineHeight="110%" display="inline !important" href="/farms?chain=bsc" target="_blank">
-              Farms
+            <Link ml="4px" lineHeight="110%" display="inline !important" href="/farms?chain=bsc" external>
+              {t('Farms')}
             </Link>
           </Text>
         </Box>

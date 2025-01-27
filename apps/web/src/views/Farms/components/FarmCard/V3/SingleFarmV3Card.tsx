@@ -26,10 +26,11 @@ import { useActiveChainId } from 'hooks/useActiveChainId'
 import { useCakePrice } from 'hooks/useCakePrice'
 import Image from 'next/image'
 import NextLink from 'next/link'
+import { useRouter } from 'next/router'
 import { useCallback, useMemo } from 'react'
+import { type V3Farm } from 'state/farms/types'
 import { styled, useTheme } from 'styled-components'
 import { logGTMClickStakeFarmEvent } from 'utils/customGTMEventTracking'
-import { V3Farm } from 'views/Farms/FarmsV3'
 import useFarmV3Actions from 'views/Farms/hooks/v3/useFarmV3Actions'
 import { BCakeV3CardView } from '../../YieldBooster/components/bCakeV3/CardView'
 import {
@@ -187,6 +188,9 @@ const SingleFarmV3Card: React.FunctionComponent<
     return new BigNumber(totalEarnings).times(cakePrice.toString()).toNumber()
   }, [cakePrice, totalEarnings])
 
+  const router = useRouter()
+  const isHistory = useMemo(() => router.pathname.includes('history'), [router])
+
   return (
     <AtomBox {...atomBoxProps}>
       <ActionContainer bg="background" flexDirection={direction}>
@@ -335,7 +339,7 @@ const SingleFarmV3Card: React.FunctionComponent<
             </RowBetween>
           </>
         )}
-        {farmCanBoost && (
+        {farmCanBoost && !isHistory && (
           <>
             <AtomBox
               width={{

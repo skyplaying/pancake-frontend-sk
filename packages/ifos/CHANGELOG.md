@@ -1,5 +1,89 @@
 # @pancakeswap/ifos
 
+## 3.0.22
+
+### Patch Changes
+
+- Updated dependencies [36f8955]
+  - @pancakeswap/sdk@5.8.10
+  - @pancakeswap/tokens@0.6.29
+  - @pancakeswap/utils@6.0.9
+
+## 3.0.21
+
+### Patch Changes
+
+- @pancakeswap/sdk@5.8.9
+- @pancakeswap/utils@6.0.9
+- @pancakeswap/tokens@0.6.28
+
+## 3.0.20
+
+### Patch Changes
+
+- Updated dependencies [8218dbf]
+  - @pancakeswap/tokens@0.6.27
+
+## 3.0.19
+
+### Patch Changes
+
+- Updated dependencies [72fb1db]
+  - @pancakeswap/tokens@0.6.26
+
+## 3.0.18
+
+### Patch Changes
+
+- Updated dependencies [6d4ecf0]
+  - @pancakeswap/tokens@0.6.25
+
+## 3.0.17
+
+### Patch Changes
+
+- Updated dependencies [103dd63]
+- Updated dependencies [c6e9e02]
+  - @pancakeswap/tokens@0.6.24
+
+## 3.0.16
+
+### Patch Changes
+
+- @pancakeswap/sdk@5.8.8
+- @pancakeswap/utils@6.0.9
+- @pancakeswap/tokens@0.6.23
+
+## 3.0.15
+
+### Patch Changes
+
+- Updated dependencies [4628ab7]
+- Updated dependencies [8f573cf]
+  - @pancakeswap/tokens@0.6.22
+
+## 3.0.14
+
+### Patch Changes
+
+- Updated dependencies [9a16780]
+  - @pancakeswap/chains@0.4.6
+  - @pancakeswap/sdk@5.8.7
+  - @pancakeswap/tokens@0.6.21
+  - @pancakeswap/utils@6.0.9
+
+## 3.0.13
+
+### Patch Changes
+
+- Updated dependencies [b9c91d1]
+- Updated dependencies [5fa28e0]
+- Updated dependencies [95cfa0c]
+  - @pancakeswap/chains@0.4.5
+  - @pancakeswap/tokens@0.6.20
+  - @pancakeswap/sdk@5.8.6
+  - @pancakeswap/utils@6.0.8
+
 ## 3.0.12
 
 ### Patch Changes

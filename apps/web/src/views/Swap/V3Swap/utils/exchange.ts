@@ -1,3 +1,4 @@
+import { OrderType } from '@pancakeswap/price-api-sdk'
 import {
   Currency,
   CurrencyAmount,
@@ -5,7 +6,6 @@ import {
   ONE_HUNDRED_PERCENT,
   Percent,
   Price,
-  Token,
   TradeType,
   ZERO,
 } from '@pancakeswap/sdk'
@@ -16,6 +16,7 @@ import { FeeAmount } from '@pancakeswap/v3-sdk'
 import { BIPS_BASE, INPUT_FRACTION_AFTER_FEE } from 'config/constants/exchange'
 import { Field } from 'state/swap/actions'
 import { basisPointsToPercent } from 'utils/exchange'
+import { InterfaceOrder } from 'views/Swap/utils'
 
 export type SlippageAdjustedAmounts = {
   [field in Field]?: CurrencyAmount<Currency> | null
@@ -23,14 +24,21 @@ export type SlippageAdjustedAmounts = {
 
 // computes the minimum amount out and maximum amount in for a trade given a user specified allowed slippage in bips
 export function computeSlippageAdjustedAmounts(
-  trade: Pick<SmartRouterTrade<TradeType>, 'inputAmount' | 'outputAmount' | 'tradeType'> | undefined | null,
+  order: InterfaceOrder | undefined | null,
   allowedSlippage: number,
 ): SlippageAdjustedAmounts {
+  if (order?.type === OrderType.DUTCH_LIMIT) {
+    return {
+      [Field.INPUT]: order.trade.maximumAmountIn,
+      [Field.OUTPUT]: order.trade.minimumAmountOut,
+    }
+  }
+
   const pct = basisPointsToPercent(allowedSlippage)
 
   return {
-    [Field.INPUT]: trade && SmartRouter.maximumAmountIn(trade, pct),
-    [Field.OUTPUT]: trade && SmartRouter.minimumAmountOut(trade, pct),
+    [Field.INPUT]: order?.trade && SmartRouter.maximumAmountIn(order.trade, pct),
+    [Field.OUTPUT]: order?.trade && SmartRouter.minimumAmountOut(order.trade, pct),
   }
 }
 
@@ -52,7 +60,7 @@ export function computeTradePriceBreakdown(trade?: TradeEssentialForPriceBreakdo
 
   const { routes, outputAmount, inputAmount } = trade
   let feePercent = new Percent(0)
-  let outputAmountWithoutPriceImpact = CurrencyAmount.fromRawAmount(trade.outputAmount.wrapped.currency, 0)
+  let outputAmountWithoutPriceImpact = CurrencyAmount.fromRawAmount(trade.outputAmount.currency, 0)
   for (const route of routes) {
     const { inputAmount: routeInputAmount, pools, percent } = route
     const routeFeePercent = ONE_HUNDRED_PERCENT.subtract(
@@ -76,7 +84,10 @@ export function computeTradePriceBreakdown(trade?: TradeEssentialForPriceBreakdo
 
     const midPrice = SmartRouter.getMidPrice(route)
     outputAmountWithoutPriceImpact = outputAmountWithoutPriceImpact.add(
-      midPrice.quote(routeInputAmount.wrapped) as CurrencyAmount<Token>,
+      CurrencyAmount.fromRawAmount(
+        trade.outputAmount.currency,
+        midPrice.wrapped.quote(routeInputAmount.wrapped).quotient,
+      ),
     )
   }
 
@@ -87,9 +98,7 @@ export function computeTradePriceBreakdown(trade?: TradeEssentialForPriceBreakdo
     }
   }
 
-  const priceImpactRaw = outputAmountWithoutPriceImpact
-    .subtract(outputAmount.wrapped)
-    .divide(outputAmountWithoutPriceImpact)
+  const priceImpactRaw = outputAmountWithoutPriceImpact.subtract(outputAmount).divide(outputAmountWithoutPriceImpact)
   const priceImpactPercent = new Percent(priceImpactRaw.numerator, priceImpactRaw.denominator)
   const priceImpactWithoutFee = priceImpactPercent.subtract(feePercent)
   const lpFeeAmount = inputAmount.multiply(feePercent)

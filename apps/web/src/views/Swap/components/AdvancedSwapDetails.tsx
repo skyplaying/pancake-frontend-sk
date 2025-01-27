@@ -3,7 +3,7 @@ import { Currency, CurrencyAmount, Percent, TradeType } from '@pancakeswap/sdk'
 import { LegacyPair as Pair } from '@pancakeswap/smart-router/legacy-router'
 import { AutoColumn, Flex, Link, Modal, ModalV2, QuestionHelper, SearchIcon, Text } from '@pancakeswap/uikit'
 import { formatAmount, formatFraction } from '@pancakeswap/utils/formatFractions'
-import { memo, useState } from 'react'
+import React, { memo, useState } from 'react'
 
 import { NumberDisplay } from '@pancakeswap/widgets-internal'
 import { RowBetween, RowFixed } from 'components/Layout/Row'
@@ -22,7 +22,8 @@ export const TradeSummary = memo(function TradeSummary({
   slippageAdjustedAmounts,
   priceImpactWithoutFee,
   realizedLPFee,
-  isMM = false,
+  gasTokenSelector,
+  isX = false,
 }: {
   hasStablePair?: boolean
   inputAmount?: CurrencyAmount<Currency>
@@ -31,7 +32,8 @@ export const TradeSummary = memo(function TradeSummary({
   slippageAdjustedAmounts: SlippageAdjustedAmounts
   priceImpactWithoutFee?: Percent | null
   realizedLPFee?: CurrencyAmount<Currency> | null
-  isMM?: boolean
+  gasTokenSelector?: React.ReactNode
+  isX?: boolean
 }) {
   const { t } = useTranslation()
   const isExactIn = tradeType === TradeType.EXACT_INPUT
@@ -39,6 +41,7 @@ export const TradeSummary = memo(function TradeSummary({
 
   return (
     <AutoColumn style={{ padding: '0 24px' }}>
+      {gasTokenSelector}
       <RowBetween>
         <RowFixed>
           <Text fontSize="14px" color="textSubtle">
@@ -124,11 +127,10 @@ export const TradeSummary = memo(function TradeSummary({
             />
           </RowFixed>
 
-          {isMM ? <Text color="textSubtle">--</Text> : <FormattedPriceImpact priceImpact={priceImpactWithoutFee} />}
+          {isX ? <Text color="primary">0%</Text> : <FormattedPriceImpact priceImpact={priceImpactWithoutFee} />}
         </RowBetween>
       )}
-
-      {realizedLPFee && (
+      {(realizedLPFee || isX) && (
         <RowBetween style={{ padding: '4px 0 0 0' }}>
           <RowFixed>
             <Text fontSize="14px" color="textSubtle">
@@ -151,11 +153,7 @@ export const TradeSummary = memo(function TradeSummary({
                       style={{ display: 'inline' }}
                       ml="4px"
                       external
-                      href={
-                        isMM
-                          ? 'https://docs.pancakeswap.finance/products/pancakeswap-exchange/market-maker-integration#fees'
-                          : 'https://docs.pancakeswap.finance/products/pancakeswap-exchange/faq#what-will-be-the-trading-fee-breakdown-for-v3-exchange'
-                      }
+                      href="https://docs.pancakeswap.finance/products/pancakeswap-exchange/faq#what-will-be-the-trading-fee-breakdown-for-v3-exchange"
                     >
                       {t('Fee Breakdown and Tokenomics')}
                     </Link>
@@ -175,7 +173,13 @@ export const TradeSummary = memo(function TradeSummary({
               placement="top"
             />
           </RowFixed>
-          <Text fontSize="14px">{`${formatAmount(realizedLPFee, 4)} ${inputAmount?.currency?.symbol}`}</Text>
+          {isX ? (
+            <Text color="primary" fontSize="14px">
+              0 {inputAmount?.currency?.symbol}
+            </Text>
+          ) : (
+            <Text fontSize="14px">{`${formatAmount(realizedLPFee, 4)} ${inputAmount?.currency?.symbol}`}</Text>
+          )}
         </RowBetween>
       )}
     </AutoColumn>
@@ -192,7 +196,6 @@ export interface AdvancedSwapDetailsProps {
   inputAmount?: CurrencyAmount<Currency>
   outputAmount?: CurrencyAmount<Currency>
   tradeType?: TradeType
-  isMM?: boolean
 }
 
 export const AdvancedSwapDetails = memo(function AdvancedSwapDetails({
@@ -205,7 +208,6 @@ export const AdvancedSwapDetails = memo(function AdvancedSwapDetails({
   outputAmount,
   tradeType,
   hasStablePair,
-  isMM = false,
 }: AdvancedSwapDetailsProps) {
   const { t } = useTranslation()
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -222,7 +224,6 @@ export const AdvancedSwapDetails = memo(function AdvancedSwapDetails({
             priceImpactWithoutFee={priceImpactWithoutFee}
             realizedLPFee={realizedLPFee}
             hasStablePair={hasStablePair}
-            isMM={isMM}
           />
           {showRoute && (
             <>
@@ -258,7 +259,6 @@ export const AdvancedSwapDetails = memo(function AdvancedSwapDetails({
                     onDismiss={() => setIsModalOpen(false)}
                   >
                     <RouterViewer
-                      isMM={isMM}
                       inputCurrency={inputAmount?.currency}
                       pairs={pairs}
                       path={path}

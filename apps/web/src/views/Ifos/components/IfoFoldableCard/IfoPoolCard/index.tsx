@@ -1,29 +1,29 @@
+import { Ifo, PoolIds } from '@pancakeswap/ifos'
 import { ContextApi, useTranslation } from '@pancakeswap/localization'
 import {
   Box,
   Card,
   CardBody,
+  CardFooter,
   CardHeader,
+  ExpandableLabel,
   Flex,
   HelpIcon,
   Text,
   useTooltip,
-  ExpandableLabel,
-  CardFooter,
 } from '@pancakeswap/uikit'
-import { useAccount } from 'wagmi'
-import { Ifo, PoolIds } from '@pancakeswap/ifos'
 import { useMemo, useState } from 'react'
 import { useProfile } from 'state/profile/hooks'
 import { styled } from 'styled-components'
 import useCriterias from 'views/Ifos/hooks/v3/useCriterias'
 import { PublicIfoData, WalletIfoData } from 'views/Ifos/types'
+import { useAccount } from 'wagmi'
+import { isBasicSale } from '../../../hooks/v7/helpers'
 import { CardConfigReturn, EnableStatus } from '../types'
 import IfoCardActions from './IfoCardActions'
 import IfoCardDetails from './IfoCardDetails'
 import IfoCardTokens from './IfoCardTokens'
 import IfoVestingCard from './IfoVestingCard'
-import { isBasicSale } from '../../../hooks/v7/helpers'
 
 const StyledCard = styled(Card)`
   width: 100%;
@@ -73,7 +73,7 @@ export const cardConfig = (
           .filter(Boolean)
 
         return {
-          title: t('Private Sale'),
+          title: t('Private IFO'),
           variant: 'blue',
           tooltip: msgs?.length ? (
             <>
@@ -103,7 +103,7 @@ export const cardConfig = (
       }
     case PoolIds.poolUnlimited:
       return {
-        title: meta?.version >= 3.1 ? t('Public Sale') : t('Unlimited Sale'),
+        title: meta?.version >= 3.1 ? t('Public IFO') : t('Unlimited IFO'),
         variant: 'violet',
         tooltip: meta.additionalClaimingFee
           ? t('No limits on the amount you can commit. Additional fee applies when claiming.')

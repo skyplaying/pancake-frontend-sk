@@ -12,14 +12,14 @@ import { RouteDisplayEssentials, RouteDisplayModal } from './RouteDisplayModal'
 
 interface Props {
   routes?: RouteDisplayEssentials[]
-  isMM?: boolean
+  wrapperStyle?: React.CSSProperties
 }
 
 const RouteInfoContainer = styled(RowBetween)`
   padding: 4px 24px 0;
 `
 
-export const RoutesBreakdown = memo(function RoutesBreakdown({ routes = [], isMM }: Props) {
+export const RoutesBreakdown = memo(function RoutesBreakdown({ routes = [], wrapperStyle }: Props) {
   const [wallchainStatus] = useWallchainStatus()
   const { t } = useTranslation()
   const routeDisplayModal = useModalV2()
@@ -33,10 +33,10 @@ export const RoutesBreakdown = memo(function RoutesBreakdown({ routes = [], isMM
 
   return (
     <>
-      <RouteInfoContainer>
+      <RouteInfoContainer style={wrapperStyle}>
         <span style={{ display: 'flex', alignItems: 'center' }}>
           <Text fontSize="14px" color="textSubtle">
-            {isMM ? t('MM Route') : deferWallchainStatus === 'found' ? t('Bonus Route') : t('Route')}
+            {deferWallchainStatus === 'found' ? t('Bonus Route') : t('Route')}
           </Text>
           <QuestionHelper
             text={
@@ -65,6 +65,36 @@ export const RoutesBreakdown = memo(function RoutesBreakdown({ routes = [], isMM
           </span>
         </Box>
         <RouteDisplayModal {...routeDisplayModal} routes={routes} />
+      </RouteInfoContainer>
+    </>
+  )
+})
+
+export const XRoutesBreakdown = memo(function XRoutesBreakdown({ wrapperStyle }: Props) {
+  const { t } = useTranslation()
+
+  return (
+    <>
+      <RouteInfoContainer style={wrapperStyle}>
+        <span style={{ display: 'flex', alignItems: 'center' }}>
+          <Text fontSize="14px" color="textSubtle">
+            {t('Route')}
+          </Text>
+          <QuestionHelper
+            text={t(
+              'Route is automatically calculated based on your routing preference to achieve the best price for your trade.',
+            )}
+            ml="4px"
+            placement="top-start"
+          />
+        </span>
+        <Box>
+          <span style={{ display: 'flex', alignItems: 'center' }}>
+            <Text color="primary" fontSize="14px">
+              PancakeSwap X
+            </Text>
+          </span>
+        </Box>
       </RouteInfoContainer>
     </>
   )

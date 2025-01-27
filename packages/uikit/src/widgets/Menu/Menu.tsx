@@ -84,11 +84,13 @@ const Menu: React.FC<React.PropsWithChildren<NavProps>> = ({
   footerLinks,
   activeItem,
   activeSubItem,
+  activeSubItemChildItem,
   langs,
   buyCakeLabel,
   buyCakeLink,
   children,
   chainId,
+  logoComponent,
 }) => {
   const { isMobile } = useMatchBreakpoints();
   const isMounted = useIsMounted();
@@ -148,9 +150,15 @@ const Menu: React.FC<React.PropsWithChildren<NavProps>> = ({
             {banner && isMounted && <TopBannerContainer height={topBannerHeight}>{banner}</TopBannerContainer>}
             <StyledNav>
               <Flex>
-                <Logo href={homeLink?.href ?? "/"} />
+                {logoComponent ?? <Logo href={homeLink?.href ?? "/home"} />}
                 <AtomBox display={{ xs: "none", lg: "block" }}>
-                  <MenuItems items={links} activeItem={activeItem} activeSubItem={activeSubItem} ml="24px" />
+                  <MenuItems
+                    ml="24px"
+                    items={links}
+                    activeItem={activeItem}
+                    activeSubItem={activeSubItem}
+                    activeSubItemChildItem={activeSubItemChildItem}
+                  />
                 </AtomBox>
               </Flex>
               <Flex alignItems="center" height="100%">
@@ -176,14 +184,14 @@ const Menu: React.FC<React.PropsWithChildren<NavProps>> = ({
               <SubMenuItems
                 items={subLinksWithoutMobile}
                 mt={`${totalTopMenuHeight + 1}px`}
-                activeItem={activeSubItem}
+                activeItem={activeSubItemChildItem || activeSubItem}
               />
 
               {subLinksMobileOnly && subLinksMobileOnly?.length > 0 && (
                 <SubMenuItems
                   items={subLinksMobileOnly}
                   mt={`${totalTopMenuHeight + 1}px`}
-                  activeItem={activeSubItem}
+                  activeItem={activeSubItemChildItem || activeSubItem}
                   isMobileOnly
                 />
               )}

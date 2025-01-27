@@ -26,7 +26,6 @@ export const ActionPanel: React.FC<
   earningToken,
   isInCakeRewardDateRange,
   manager,
-  vaultAddress,
   managerAddress,
   managerInfoUrl,
   strategyInfoUrl,
@@ -58,6 +57,7 @@ export const ActionPanel: React.FC<
   minDepositUSD,
   isBooster,
   boosterContractAddress,
+  adapterAddress,
 }) => {
   const { colors } = useTheme()
   const { isMobile, isDesktop } = useMatchBreakpoints()
@@ -150,6 +150,7 @@ export const ActionPanel: React.FC<
             minDepositUSD={minDepositUSD}
             isBooster={isBooster && isInCakeRewardDateRange}
             boosterContractAddress={boosterContractAddress}
+            adapterAddress={adapterAddress}
           />
         </TableActionCard>
       </Flex>

@@ -1,5 +1,57 @@
 # @pancakeswap/v3-sdk
 
+## 3.8.13
+
+### Patch Changes
+
+- Updated dependencies [36f8955]
+  - @pancakeswap/sdk@5.8.10
+
+## 3.8.12
+
+### Patch Changes
+
+- Updated dependencies [176eb10]
+- Updated dependencies [176eb10]
+  - @pancakeswap/swap-sdk-core@1.3.0
+  - @pancakeswap/sdk@5.8.9
+
+## 3.8.11
+
+### Patch Changes
+
+- Updated dependencies [f551e5e]
+  - @pancakeswap/swap-sdk-core@1.2.0
+  - @pancakeswap/sdk@5.8.8
+
+## 3.8.10
+
+### Patch Changes
+
+- 911d107: Fix invalid assignment in max liquidity for amounts
+
+## 3.8.9
+
+### Patch Changes
+
+- fe96bb1: Fix invalid assignment in sqrt math
+
+## 3.8.8
+
+### Patch Changes
+
+- Updated dependencies [9a16780]
+  - @pancakeswap/chains@0.4.6
+  - @pancakeswap/sdk@5.8.7
+
+## 3.8.7
+
+### Patch Changes
+
+- Updated dependencies [b9c91d1]
+  - @pancakeswap/chains@0.4.5
+  - @pancakeswap/sdk@5.8.6
+
 ## 3.8.6
 
 ### Patch Changes

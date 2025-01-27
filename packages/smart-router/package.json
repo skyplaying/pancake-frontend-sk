@@ -1,6 +1,6 @@
 {
   "name": "@pancakeswap/smart-router",
-  "version": "6.0.11",
+  "version": "7.0.2",
   "description": "A SDK for getting best routes from AMM",
   "repository": {
     "type": "git",
@@ -32,6 +32,7 @@
     "@pancakeswap/token-lists": "workspace:*",
     "@pancakeswap/tokens": "workspace:*",
     "@pancakeswap/v3-sdk": "workspace:*",
+    "@pancakeswap/v4-sdk": "workspace:*",
     "async-retry": "^1.3.1",
     "debug": "^4.3.4",
     "graphql": "^16.8.1",
@@ -40,7 +41,7 @@
     "mnemonist": "^0.38.3",
     "stats-lite": "^2.2.0",
     "tiny-invariant": "^1.3.0",
-    "viem": "2.13.3",
+    "viem": "catalog:",
     "zod": "^3.22.3"
   },
   "devDependencies": {

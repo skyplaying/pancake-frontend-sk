@@ -77,6 +77,8 @@ export type RoiCalculatorProps = {
   volume24H?: number;
   max?: string;
   maxLabel?: string;
+  additionalApr?: number;
+  customCakeApr?: BigNumber;
 } & (RoiCalculatorFarmProps | RoiCalculatorLPProps);
 
 type RoiCalculatorLPProps = {
@@ -114,6 +116,7 @@ export function RoiCalculator({
   onPriceSpanChange,
   allowApply = false,
   onApply,
+  customCakeApr,
   ...props
 }: RoiCalculatorProps) {
   const { isMobile } = useMatchBreakpoints();
@@ -230,6 +233,9 @@ export function RoiCalculator({
     ) {
       return undefined;
     }
+    if (customCakeApr) {
+      return customCakeApr;
+    }
 
     if (isPositionOutOfRange(tickCurrent, { tickLower: priceRange.tickLower, tickUpper: priceRange.tickUpper })) {
       return BIG_ZERO;
@@ -258,7 +264,17 @@ export function RoiCalculator({
       console.error(error, amountA, priceRange, sqrtRatioX96);
       return undefined;
     }
-  }, [amountA, amountB, priceRange, sqrtRatioX96, farmingRewardsEnabled, cakeAprFactor, tickCurrent, usdValue]);
+  }, [
+    amountA,
+    amountB,
+    priceRange,
+    sqrtRatioX96,
+    farmingRewardsEnabled,
+    cakeAprFactor,
+    customCakeApr,
+    tickCurrent,
+    usdValue,
+  ]);
 
   const editedCakeApr = useMemo(
     () =>

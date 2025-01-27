@@ -1,90 +1,53 @@
-import { ChainId } from '@pancakeswap/chains'
-import { Pair } from '@pancakeswap/sdk'
+import { ERC20Token } from '@pancakeswap/sdk'
 import { useQuery } from '@tanstack/react-query'
 import { SLOW_INTERVAL } from 'config/constants'
-import { LP_HOLDERS_FEE, WEEKS_IN_YEAR } from 'config/constants/info'
-import { gql } from 'graphql-request'
-import { getBlocksFromTimestamps } from 'utils/getBlocksFromTimestamps'
-import { getChangeForPeriod } from 'utils/getChangeForPeriod'
-import { getDeltaTimestamps } from 'utils/getDeltaTimestamps'
-import { MultiChainName, getMultiChainQueryEndPointWithStableSwap, multiChainQueryMainToken } from '../info/constant'
+import { chainIdToExplorerInfoChainName, explorerApiClient } from 'state/info/api/client'
+import { useAtomValue } from 'jotai/index'
+import { poolAprAtom } from 'state/farmsV4/state/poolApr/atom'
+import { useMemo } from 'react'
 
-interface PoolReserveVolume {
-  reserveUSD: string
-  volumeUSD: string
-}
+export const useLPApr = (
+  protocol: 'v2' | 'v3' | 'stable',
+  pair?: {
+    liquidityToken: ERC20Token | undefined
+  } | null,
+) => {
+  const key = useMemo(
+    () => (pair ? (`${pair?.liquidityToken?.chainId}:${pair?.liquidityToken?.address}` as const) : null),
+    [pair],
+  )
 
-interface PoolReserveVolumeResponse {
-  now: PoolReserveVolume[]
-  oneDayAgo: PoolReserveVolume[]
-  twoDaysAgo: PoolReserveVolume[]
-  oneWeekAgo: PoolReserveVolume[]
-  twoWeeksAgo: PoolReserveVolume[]
-}
+  const poolApr = useAtomValue(poolAprAtom)[key ?? '']
 
-export const useLPApr = (pair?: Pair | null) => {
   const { data: poolData } = useQuery({
-    queryKey: ['LP7dApr', pair?.liquidityToken.address],
+    queryKey: ['LP7dApr', pair?.liquidityToken?.address],
 
-    queryFn: async () => {
-      if (!pair) return undefined
-      const timestampsArray = getDeltaTimestamps()
-      const blocks = await getBlocksFromTimestamps(timestampsArray, 'desc', 1000)
-      const [, , block7d] = blocks ?? []
-      const { error, data } = await fetchPoolVolumeAndReserveData(
-        block7d.number,
-        pair.liquidityToken.address.toLowerCase(),
-      )
-      if (error) return null
-      const current = data?.now[0]?.volumeUSD !== undefined ? parseFloat(data?.now[0]?.volumeUSD) : undefined
-      const currentReserveUSD =
-        data?.now[0]?.reserveUSD !== undefined ? parseFloat(data?.now[0]?.reserveUSD) : undefined
-      const week = data?.oneWeekAgo[0]?.volumeUSD !== undefined ? parseFloat(data?.oneWeekAgo[0]?.volumeUSD) : undefined
-      const [volumeUSDWeek] = getChangeForPeriod(current, week)
-      const liquidityUSD = currentReserveUSD || 0
-      const lpApr7d = liquidityUSD > 0 ? (volumeUSDWeek * LP_HOLDERS_FEE * WEEKS_IN_YEAR * 100) / liquidityUSD : 0
-      return lpApr7d ? { lpApr7d } : undefined
+    queryFn: async ({ signal }) => {
+      if (!pair || !pair.liquidityToken) return undefined
+
+      const data = await explorerApiClient
+        .GET(`/cached/pools/apr/${protocol}/{chainName}/{address}`, {
+          signal,
+          params: {
+            path: {
+              address: pair?.liquidityToken?.address,
+              chainName: chainIdToExplorerInfoChainName[pair?.liquidityToken?.chainId],
+            },
+          },
+        })
+        .then((res) => res.data)
+
+      return data?.apr7d ? { lpApr: parseFloat(data.apr7d) * 100 } : undefined
     },
 
-    enabled: Boolean(pair && pair.chainId === ChainId.BSC),
+    enabled: Boolean(
+      !poolApr?.lpApr && pair && pair.liquidityToken && chainIdToExplorerInfoChainName[pair.liquidityToken?.chainId],
+    ),
     refetchInterval: SLOW_INTERVAL,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchOnReconnect: false,
   })
 
-  return poolData
-}
-const fetchPoolVolumeAndReserveData = async (
-  block7d: number,
-  poolAddress: string,
-  chainName: 'ETH' | 'BSC' = 'BSC',
-) => {
-  try {
-    const query = gql`
-      query pools {
-        now: ${POOL_AT_BLOCK(chainName, null, poolAddress)}
-        oneWeekAgo: ${POOL_AT_BLOCK(chainName, block7d, poolAddress)}
-      }
-    `
-
-    const data = await getMultiChainQueryEndPointWithStableSwap(chainName).request<PoolReserveVolumeResponse>(query)
-    return { data, error: false }
-  } catch (error) {
-    console.error('Failed to fetch pool data', error)
-    return { error: true }
-  }
-}
-const POOL_AT_BLOCK = (chainName: MultiChainName, block: number | null, pool: string) => {
-  const addressesString = `["${pool}"]`
-  const blockString = block ? `block: {number: ${block}}` : ``
-  return `pairs(
-    where: { id_in: ${addressesString} }
-    ${blockString}
-    orderBy: trackedReserve${multiChainQueryMainToken[chainName]}
-    orderDirection: desc
-  ) {
-    reserveUSD
-    volumeUSD
-  }`
+  return poolData ?? (poolApr ? { lpApr: parseFloat(poolApr.lpApr) * 100 } : undefined)
 }

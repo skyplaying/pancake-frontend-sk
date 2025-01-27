@@ -5,13 +5,13 @@ import { memo, useCallback, useMemo, useState } from 'react'
 import { useCurrencyBalances } from 'state/wallet/hooks'
 
 import ConnectWalletButton from 'components/ConnectWalletButton'
-import NextLink from 'next/link'
 import { styled, useTheme } from 'styled-components'
 import { StatusView } from 'views/Farms/components/YieldBooster/components/bCakeV3/StatusView'
+import { StatusViewButtons } from 'views/Farms/components/YieldBooster/components/bCakeV3/StatusViewButtons'
 import { useBCakeBoostLimitAndLockInfo } from 'views/Farms/components/YieldBooster/hooks/bCakeV3/useBCakeV3Info'
 import { useBoostStatusPM } from 'views/Farms/components/YieldBooster/hooks/bCakeV3/useBoostStatus'
 import { useAccount } from 'wagmi'
-import { useWrapperBooster } from '../../hooks'
+import { usePMV2SSMaxBoostMultiplier, useWrapperBooster } from '../../hooks'
 import { useOnStake } from '../../hooks/useOnStake'
 import { AddLiquidity } from '../AddLiquidity'
 import { LiquidityManagementProps } from '../LiquidityManagement'
@@ -72,7 +72,6 @@ export const LiquidityManagement = memo(function LiquidityManagement({
   userLpAmounts,
   totalSupplyAmounts,
   precision,
-  isInCakeRewardDateRange,
   totalStakedInUsd,
   strategyInfoUrl,
   learnMoreAboutUrl,
@@ -83,6 +82,7 @@ export const LiquidityManagement = memo(function LiquidityManagement({
   boosterMultiplier,
   isBooster,
   boosterContractAddress,
+  adapterAddress,
 }: LiquidityManagementProps) {
   const { colors } = useTheme()
   const { t } = useTranslation()
@@ -92,6 +92,7 @@ export const LiquidityManagement = memo(function LiquidityManagement({
   const { address: account } = useAccount()
   const showAddLiquidityModal = useCallback(() => setAddLiquidityModalOpen(true), [])
   const hideAddLiquidityModal = useCallback(() => setAddLiquidityModalOpen(false), [])
+  const { maxBoostMultiplier } = usePMV2SSMaxBoostMultiplier()
 
   const showRemoveLiquidityModal = useCallback(() => setRemoveLiquidityModalOpen(true), [])
   const hideRemoveLiquidityModal = useCallback(() => setRemoveLiquidityModalOpen(false), [])
@@ -120,7 +121,10 @@ export const LiquidityManagement = memo(function LiquidityManagement({
     <>
       {hasStaked ? (
         <AtomBox>
-          <ActionContainer flexDirection={!isDesktop ? 'column' : 'row'}>
+          <ActionContainer
+            flexDirection={!isDesktop ? 'column' : 'row'}
+            style={{ flexWrap: isDesktop ? 'nowrap' : 'wrap' }}
+          >
             <Flex flexDirection="column" flexBasis="50%">
               <StakedAssets
                 currencyA={currencyA}
@@ -166,7 +170,6 @@ export const LiquidityManagement = memo(function LiquidityManagement({
                   bCakeWrapper={bCakeWrapper}
                   pendingReward={pendingReward}
                   earningToken={earningToken}
-                  isInCakeRewardDateRange={isInCakeRewardDateRange}
                   refetch={refetch}
                 />
               </RowBetween>
@@ -190,18 +193,17 @@ export const LiquidityManagement = memo(function LiquidityManagement({
                         status={status}
                         isFarmStaking
                         boostedMultiplier={boosterMultiplier}
-                        maxBoostMultiplier={3}
+                        maxBoostMultiplier={maxBoostMultiplier}
                         shouldUpdate={shouldUpdate}
                         expectMultiplier={veCakeUserMultiplierBeforeBoosted}
                       />
-                      {shouldUpdate && <Button onClick={() => onUpdate(refetch)}>{t('Update')}</Button>}{' '}
-                      {!locked && (
-                        <NextLink href="/cake-staking" passHref>
-                          <Button width="100%" style={{ whiteSpace: 'nowrap' }}>
-                            {t('Go to Lock')}
-                          </Button>
-                        </NextLink>
-                      )}
+                      <StatusViewButtons
+                        updateButton={
+                          shouldUpdate ? <Button onClick={() => onUpdate(refetch)}>{t('Update')}</Button> : null
+                        }
+                        locked={locked}
+                        isTableView
+                      />
                     </Flex>
                   </RowBetween>
                 </>
@@ -233,14 +235,8 @@ export const LiquidityManagement = memo(function LiquidityManagement({
                 />
                 <RowBetween flexDirection="column" alignItems="flex-start" flex={1} width="100%">
                   <Flex width="100%" justifyContent="space-between" alignItems="center">
-                    <StatusView status={status} maxBoostMultiplier={3} />
-                    {!locked && (
-                      <NextLink href="/cake-staking" passHref>
-                        <Button width="100%" style={{ whiteSpace: 'nowrap' }}>
-                          {t('Go to Lock')}
-                        </Button>
-                      </NextLink>
-                    )}
+                    <StatusView status={status} maxBoostMultiplier={maxBoostMultiplier} />
+                    <StatusViewButtons updateButton={null} locked={locked} isTableView />
                   </Flex>
                 </RowBetween>
               </>
@@ -289,6 +285,7 @@ export const LiquidityManagement = memo(function LiquidityManagement({
         isBooster={isBooster}
         onStake={onStake}
         isTxLoading={isTxLoading}
+        adapterAddress={adapterAddress}
       />
       <RemoveLiquidity
         isOpen={removeLiquidityModalOpen}

@@ -7,6 +7,7 @@ import { CHAIN_IDS } from 'utils/wagmi'
 import AddLiquidityV2FormProvider from 'views/AddLiquidity/AddLiquidityV2FormProvider'
 import { AddLiquidityV3Layout, UniversalAddLiquidity } from 'views/AddLiquidityV3'
 import { SELECTOR_TYPE } from 'views/AddLiquidityV3/types'
+import { PageWithoutFAQ } from 'views/Page'
 
 const AddLiquidityPage = () => {
   const router = useRouter()
@@ -21,7 +22,7 @@ const AddLiquidityPage = () => {
 
   return (
     <AddLiquidityV2FormProvider>
-      <AddLiquidityV3Layout preferredSelectType={SELECTOR_TYPE.V2}>
+      <AddLiquidityV3Layout>
         <UniversalAddLiquidity
           preferredSelectType={SELECTOR_TYPE.V2}
           currencyIdA={currencyIdA}
@@ -34,6 +35,7 @@ const AddLiquidityPage = () => {
 
 AddLiquidityPage.chains = CHAIN_IDS
 AddLiquidityPage.screen = true
+AddLiquidityPage.Layout = PageWithoutFAQ
 
 export default AddLiquidityPage
 
@@ -63,7 +65,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   if (currencyIdA && currencyIdB && currencyIdA.toLowerCase() === currencyIdB.toLowerCase()) {
     return {
       redirect: {
-        statusCode: 303,
+        statusCode: 307,
         destination: `/add/${currencyIdA}`,
       },
     }

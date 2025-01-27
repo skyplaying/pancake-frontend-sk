@@ -1,8 +1,8 @@
-import { useCallback, useEffect } from 'react'
 import { watchAccount } from '@wagmi/core'
-import { useAccount, useAccountEffect, useConfig } from 'wagmi'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useAppDispatch } from 'state'
 import { clearUserStates } from 'utils/clearUserStates'
+import { useAccount, useAccountEffect, useConfig } from 'wagmi'
 import { useSwitchNetworkLocal } from './useSwitchNetwork'
 
 export const useChainIdListener = () => {
@@ -22,7 +22,7 @@ export const useChainIdListener = () => {
     return () => {
       connector?.emitter?.off('change', onChainChanged)
     }
-  })
+  }, [connector, onChainChanged])
 }
 
 const useAddressListener = () => {
@@ -31,7 +31,7 @@ const useAddressListener = () => {
   const { chainId } = useAccount()
 
   useEffect(() => {
-    return watchAccount(config, {
+    return watchAccount(config as any, {
       onChange(data, prevData) {
         if (prevData.status === 'connected' && data.status === 'connected' && prevData.chainId === data.chainId) {
           clearUserStates(dispatch, { chainId })
@@ -47,9 +47,14 @@ export const useAccountEventListener = () => {
   useChainIdListener()
   useAddressListener()
 
-  useAccountEffect({
-    onDisconnect() {
-      clearUserStates(dispatch, { chainId })
-    },
-  })
+  useAccountEffect(
+    useMemo(
+      () => ({
+        onDisconnect() {
+          clearUserStates(dispatch, { chainId })
+        },
+      }),
+      [chainId, dispatch],
+    ),
+  )
 }

@@ -1,3 +1,4 @@
+import { ChainId } from '@pancakeswap/chains'
 import { bCakeSupportedChainId } from '@pancakeswap/farms'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import BN from 'bignumber.js'
@@ -8,7 +9,7 @@ import _toNumber from 'lodash/toNumber'
 import { useCallback, useMemo } from 'react'
 import { useCakeLockStatus } from 'views/CakeStaking/hooks/useVeCakeUserInfo'
 import { CakeLockStatus } from 'views/CakeStaking/types'
-import { useReadContract } from 'wagmi'
+import { useReadContract } from '@pancakeswap/wagmi'
 import { PRECISION_FACTOR, getUserMultiplier } from './multiplierAPI'
 
 export const USER_ESTIMATED_MULTIPLIER = 2
@@ -68,6 +69,7 @@ export const useUserPositionInfo = (tokenId?: string) => {
     enabled: Boolean(chainId && tokenId),
     ...QUERY_SETTINGS_WITHOUT_REFETCH,
   })
+
   return {
     data: {
       liquidity: data?.[0],
@@ -135,8 +137,8 @@ export const useVeCakeUserMultiplierBeforeBoosted = (tokenId?: string) => {
   }
 }
 
-export const useBCakeBoostLimitAndLockInfo = () => {
-  const { status } = useCakeLockStatus()
+export const useBCakeBoostLimitAndLockInfo = (targetChain: ChainId = ChainId.BSC) => {
+  const { status } = useCakeLockStatus(targetChain)
   const isLockEnd = useMemo(() => status === CakeLockStatus.Expired, [status])
   const locked = useMemo(() => status === CakeLockStatus.Locking, [status])
 

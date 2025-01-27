@@ -1,14 +1,17 @@
-import 'core-js/features/string/replace-all'
-import 'core-js/features/array/to-sorted'
 import { ResetCSS, ScrollToTopButtonV2, ToastListener } from '@pancakeswap/uikit'
 import BigNumber from 'bignumber.js'
 import { SentryErrorBoundary } from 'components/ErrorBoundary'
 import GlobalCheckClaimStatus from 'components/GlobalCheckClaimStatus'
 import { PageMeta } from 'components/Layout/Page'
+import { AffiliateExpiredModal } from 'components/Modal/AffiliateExpiredModal'
+import { AffiliateSunsetModal } from 'components/Modal/AffiliateSunsetModal'
+import { SimpleStakingSunsetModal } from 'components/Modal/SimpleStakingSunsetModal'
 import { NetworkModal } from 'components/NetworkModal'
 import { FixedSubgraphHealthIndicator } from 'components/SubgraphHealthIndicator/FixedSubgraphHealthIndicator'
 import TransactionsDetailModal from 'components/TransactionDetailModal'
 import { VercelToolbar } from 'components/VercelToolbar'
+import 'core-js/features/array/to-sorted'
+import 'core-js/features/string/replace-all'
 import { useAccountEventListener } from 'hooks/useAccountEventListener'
 import useEagerConnect from 'hooks/useEagerConnect'
 import useLockedEndNotification from 'hooks/useLockedEndNotification'
@@ -23,10 +26,16 @@ import Head from 'next/head'
 import Script from 'next/script'
 import { Fragment } from 'react'
 import { PersistGate } from 'redux-persist/integration/react'
+import 'utils/abortcontroller-polyfill'
 import { V4CakeIcon } from 'views/Home/components/V4CakeIcon'
 
+import { AdPanel } from 'components/AdPanel'
+import { layoutDesktopAdIgnoredPages, layoutMobileAdIgnoredPages } from 'components/AdPanel/config'
+import { shouldRenderOnPages } from 'components/AdPanel/renderConditions'
+import { ZKSyncAirdropModalWithAutoPopup } from 'components/ClaimZksyncAirdropModal'
 import { useDataDogRUM } from 'hooks/useDataDogRUM'
 import { useLoadExperimentalFeatures } from 'hooks/useExperimentalFeatureEnabled'
+import useInitNotificationsClient from 'hooks/useInitNotificationsClient'
 import { useVercelFeatureFlagOverrides } from 'hooks/useVercelToolbar'
 import { useWeb3WalletView } from 'hooks/useWeb3WalletView'
 import { useInitGlobalWorker } from 'hooks/useWorker'
@@ -59,6 +68,7 @@ function GlobalHooks() {
   useSentryUser()
   useThemeCookie()
   useLockedEndNotification()
+  useInitNotificationsClient()
   return null
 }
 
@@ -68,6 +78,7 @@ function MPGlobalHooks() {
   useAccountEventListener()
   useSentryUser()
   useLockedEndNotification()
+  useInitNotificationsClient()
   return null
 }
 
@@ -89,7 +100,12 @@ function MyApp(props: AppProps<{ initialReduxState: any; dehydratedState: any }>
         <meta name="theme-color" content="#1FC7D4" />
         {(Component as NextPageWithLayout).mp && (
           // eslint-disable-next-line @next/next/no-sync-scripts
-          <script src="https://public.bnbstatic.com/static/js/mp-webview-sdk/webview-v1.0.0.min.js" id="mp-webview" />
+          <script
+            src="https://public.bnbstatic.com/static/js/mp-webview-sdk/webview-v1.0.0.min.js"
+            integrity="sha384-PV6Pqh2oiQNNl9jwtcTIue3fwDnP5k80+DaPY8/AS4qxGA91MsE3G91BQ2jQ81oT"
+            crossOrigin="anonymous"
+            id="mp-webview"
+          />
         )}
       </Head>
       <DefaultSeo {...SEO} />
@@ -168,6 +184,8 @@ const App = ({ Component, pageProps }: AppPropsWithLayout) => {
       <ShowMenu>
         <Layout>
           <Component {...pageProps} />
+          <AdPanel.MobileCard shouldRender={!shouldRenderOnPages(layoutMobileAdIgnoredPages)} mt="4px" mb="12px" />
+          <AdPanel.DesktopCard shouldRender={!shouldRenderOnPages(layoutDesktopAdIgnoredPages)} />
         </Layout>
       </ShowMenu>
       <EasterEgg iterations={2} />
@@ -178,6 +196,10 @@ const App = ({ Component, pageProps }: AppPropsWithLayout) => {
       {isShowScrollToTopButton && <ScrollToTopButtonV2 />}
       {shouldScreenWallet && <Blocklist />}
       {isShowV4IconButton && <V4CakeIcon />}
+      <ZKSyncAirdropModalWithAutoPopup />
+      <AffiliateExpiredModal />
+      <AffiliateSunsetModal />
+      <SimpleStakingSunsetModal />
       <VercelToolbar />
     </ProductionErrorBoundary>
   )

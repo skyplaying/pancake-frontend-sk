@@ -18,9 +18,10 @@ import { useRouter } from 'next/router'
 import { useCallback, useContext, useMemo } from 'react'
 import { useAppDispatch } from 'state'
 import { pickFarmTransactionTx } from 'state/global/actions'
-import { FarmTransactionStatus, NonBscFarmStepType } from 'state/transactions/actions'
-import { useNonBscFarmPendingTransaction, useTransactionAdder } from 'state/transactions/hooks'
+import { CrossChainFarmStepType, FarmTransactionStatus } from 'state/transactions/actions'
+import { useCrossChainFarmPendingTransaction, useTransactionAdder } from 'state/transactions/hooks'
 import { styled } from 'styled-components'
+import { logGTMClickStakeFarmConfirmEvent, logGTMStakeFarmTxSentEvent } from 'utils/customGTMEventTracking'
 import { useIsBloctoETH } from 'views/Farms'
 import { useBCakeBoostLimitAndLockInfo } from 'views/Farms/components/YieldBooster/hooks/bCakeV3/useBCakeV3Info'
 import { useFirstTimeCrossFarming } from '../../hooks/useFirstTimeCrossFarming'
@@ -84,7 +85,7 @@ const StakeAction: React.FC<React.PropsWithChildren<FarmCardActionsProps>> = ({
   const { toastSuccess } = useToast()
   const { fetchWithCatchTxError, fetchTxResponse, loading: pendingTx } = useCatchTxError()
   const { boosterState } = useContext(YieldBoosterStateContext)
-  const pendingFarm = useNonBscFarmPendingTransaction(lpAddress)
+  const pendingFarm = useCrossChainFarmPendingTransaction(lpAddress)
   const { isFirstTime, refresh: refreshFirstTime } = useFirstTimeCrossFarming(vaultPid)
   const isBloctoETH = useIsBloctoETH()
   const isBoosterAndRewardInRange = isBooster && bCakePublicData?.isRewardInRange
@@ -103,12 +104,14 @@ const StakeAction: React.FC<React.PropsWithChildren<FarmCardActionsProps>> = ({
   }, [pendingFarm, router])
 
   const handleStake = async (amount: string) => {
+    logGTMClickStakeFarmConfirmEvent()
     if (vaultPid) {
-      await handleNonBscStake(amount)
+      await handleCrossChainStake(amount)
       refreshFirstTime()
     } else {
       const receipt = await fetchWithCatchTxError(() => onStake(amount))
       if (receipt?.status) {
+        logGTMStakeFarmTxSentEvent()
         toastSuccess(
           `${t('Staked')}!`,
           <ToastDescriptionWithTx txHash={receipt.transactionHash}>
@@ -120,20 +123,21 @@ const StakeAction: React.FC<React.PropsWithChildren<FarmCardActionsProps>> = ({
     }
   }
 
-  const handleNonBscStake = async (amountValue: string) => {
+  const handleCrossChainStake = async (amountValue: string) => {
     const receipt = await fetchTxResponse(() => onStake(amountValue))
     const amountAsBigNumber = new BigNumber(amountValue).times(DEFAULT_TOKEN_DECIMAL)
     const amount = formatLpBalance(new BigNumber(amountAsBigNumber), 18)
 
     if (receipt) {
+      logGTMStakeFarmTxSentEvent()
       addTransaction(receipt, {
-        type: 'non-bsc-farm',
+        type: 'cross-chain-farm',
         translatableSummary: {
           text: 'Stake %amount% %lpSymbol% Token',
           data: { amount, lpSymbol },
         },
-        nonBscFarm: {
-          type: NonBscFarmStepType.STAKE,
+        crossChainFarm: {
+          type: CrossChainFarmStepType.STAKE,
           status: FarmTransactionStatus.PENDING,
           amount,
           lpSymbol,
@@ -163,7 +167,7 @@ const StakeAction: React.FC<React.PropsWithChildren<FarmCardActionsProps>> = ({
 
   const handleUnstake = async (amount: string) => {
     if (vaultPid) {
-      await handleNonBscUnStake(amount)
+      await handleCrossChainUnStake(amount)
     } else {
       const receipt = await fetchWithCatchTxError(() => onUnstake(amount))
       if (receipt?.status) {
@@ -178,20 +182,20 @@ const StakeAction: React.FC<React.PropsWithChildren<FarmCardActionsProps>> = ({
     }
   }
 
-  const handleNonBscUnStake = async (amountValue: string) => {
+  const handleCrossChainUnStake = async (amountValue: string) => {
     const receipt = await fetchTxResponse(() => onUnstake(amountValue))
     const amountAsBigNumber = new BigNumber(amountValue).times(DEFAULT_TOKEN_DECIMAL)
     const amount = formatLpBalance(new BigNumber(amountAsBigNumber), 18)
 
     if (receipt) {
       addTransaction(receipt, {
-        type: 'non-bsc-farm',
+        type: 'cross-chain-farm',
         translatableSummary: {
           text: 'Unstake %amount% %lpSymbol% Token',
           data: { amount, lpSymbol },
         },
-        nonBscFarm: {
-          type: NonBscFarmStepType.UNSTAKE,
+        crossChainFarm: {
+          type: CrossChainFarmStepType.UNSTAKE,
           status: FarmTransactionStatus.PENDING,
           amount,
           lpSymbol,
@@ -268,7 +272,7 @@ const StakeAction: React.FC<React.PropsWithChildren<FarmCardActionsProps>> = ({
       lpRewardsApr={lpRewardsApr}
       onConfirm={handleStake}
       handleApprove={handleApprove}
-      isBooster={isBoosterAndRewardInRange && chainId === ChainId.BSC}
+      isBooster={isBoosterAndRewardInRange}
       boosterMultiplier={
         isBoosterAndRewardInRange
           ? bCakeUserData?.boosterMultiplier === 0 || bCakeUserData?.stakedBalance.eq(0) || !locked

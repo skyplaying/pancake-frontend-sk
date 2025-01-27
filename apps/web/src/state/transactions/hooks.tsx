@@ -9,18 +9,19 @@ import { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { AppState, useAppDispatch } from 'state'
 import { useAccount } from 'wagmi'
-
-import { useActiveChainId } from 'hooks/useActiveChainId'
 import { Hash } from 'viem'
-
 import { Token } from '@pancakeswap/swap-sdk-core'
 import { FeeAmount } from '@pancakeswap/v3-sdk'
+import { useTranslation } from '@pancakeswap/localization'
+
+import { useActiveChainId } from 'hooks/useActiveChainId'
+
 import useAccountActiveChain from 'hooks/useAccountActiveChain'
 import { useSafeTxHashTransformer } from 'hooks/useSafeTxHashTransformer'
 import {
   FarmTransactionStatus,
-  NonBscFarmStepType,
-  NonBscFarmTransactionType,
+  CrossChainFarmStepType,
+  CrossChainFarmTransactionType,
   TransactionType,
   addTransaction,
 } from './actions'
@@ -36,7 +37,7 @@ export function useTransactionAdder(): (
     claim?: { recipient: string }
     type?: TransactionType
     order?: Order
-    nonBscFarm?: NonBscFarmTransactionType
+    crossChainFarm?: CrossChainFarmTransactionType
     // add/remove pool
     baseCurrencyId?: string
     quoteCurrencyId?: string
@@ -65,7 +66,7 @@ export function useTransactionAdder(): (
         claim,
         type,
         order,
-        nonBscFarm,
+        crossChainFarm,
       }: {
         summary?: string
         translatableSummary?: { text: string; data?: Record<string, string | number | undefined> }
@@ -73,7 +74,7 @@ export function useTransactionAdder(): (
         approval?: { tokenAddress: string; spender: string }
         type?: TransactionType
         order?: Order
-        nonBscFarm?: NonBscFarmTransactionType
+        crossChainFarm?: CrossChainFarmTransactionType
       } = {},
     ) => {
       if (!account) return
@@ -109,7 +110,7 @@ export function useTransactionAdder(): (
           claim,
           type,
           order,
-          nonBscFarm,
+          crossChainFarm,
         }),
       )
     },
@@ -238,15 +239,15 @@ function newTransactionsFirst(a: TransactionDetails, b: TransactionDetails) {
 }
 
 // calculate pending transactions
-interface NonBscPendingData {
+interface CrossChainPendingData {
   txid?: string
   lpAddress?: string
-  type?: NonBscFarmStepType
+  type?: CrossChainFarmStepType
 }
 export function usePendingTransactions(): {
   hasPendingTransactions: boolean
   pendingNumber: number
-  nonBscFarmPendingList: NonBscPendingData[]
+  crossChainFarmPendingList: CrossChainPendingData[]
 } {
   const allTransactions = useAllTransactions()
   const sortedRecentTransactions = useMemo(() => {
@@ -255,25 +256,66 @@ export function usePendingTransactions(): {
   }, [allTransactions])
 
   const pending = sortedRecentTransactions
-    .filter((tx) => !tx.receipt || tx?.nonBscFarm?.status === FarmTransactionStatus.PENDING)
+    .filter((tx) => !tx.receipt || tx?.crossChainFarm?.status === FarmTransactionStatus.PENDING)
     .map((tx) => tx.hash)
   const hasPendingTransactions = !!pending.length
 
-  const nonBscFarmPendingList = sortedRecentTransactions
-    .filter((tx) => pending.includes(tx.hash) && !!tx.nonBscFarm)
-    .map((tx) => ({ txid: tx?.hash, lpAddress: tx?.nonBscFarm?.lpAddress, type: tx?.nonBscFarm?.type }))
+  const crossChainFarmPendingList = sortedRecentTransactions
+    .filter((tx) => pending.includes(tx.hash) && !!tx.crossChainFarm)
+    .map((tx) => ({ txid: tx?.hash, lpAddress: tx?.crossChainFarm?.lpAddress, type: tx?.crossChainFarm?.type }))
 
   return {
     hasPendingTransactions,
-    nonBscFarmPendingList,
+    crossChainFarmPendingList,
     pendingNumber: pending.length,
   }
 }
 
-export function useNonBscFarmPendingTransaction(lpAddress?: string): NonBscPendingData[] {
-  const { nonBscFarmPendingList } = usePendingTransactions()
+export function useCrossChainFarmPendingTransaction(lpAddress?: string): CrossChainPendingData[] {
+  const { crossChainFarmPendingList } = usePendingTransactions()
   return useMemo(() => {
     if (!lpAddress) return []
-    return nonBscFarmPendingList.filter((tx) => tx?.lpAddress?.toLowerCase() === lpAddress.toLowerCase())
-  }, [lpAddress, nonBscFarmPendingList])
+    return crossChainFarmPendingList.filter((tx) => tx?.lpAddress?.toLowerCase() === lpAddress.toLowerCase())
+  }, [lpAddress, crossChainFarmPendingList])
+}
+
+export function useReadableTransactionType(type?: TransactionType) {
+  const { t } = useTranslation()
+  return useMemo(() => {
+    if (type === undefined) {
+      return t('PancakeSwap AMM')
+    }
+    switch (type) {
+      case 'approve':
+        return t('Token Approval')
+      case 'swap':
+        return t('PancakeSwap AMM')
+      case 'wrap':
+        return t('Wrap Native Token')
+      case 'add-liquidity':
+      case 'increase-liquidity-v3':
+      case 'add-liquidity-v3':
+      case 'zap-liquidity-v3':
+        return t('Add Liquidity')
+      case 'remove-liquidity':
+      case 'remove-liquidity-v3':
+        return t('Remove Liquidity')
+      case 'collect-fee':
+        return t('Collect Fee')
+      case 'limit-order-approval':
+      case 'limit-order-submission':
+      case 'limit-order-cancellation':
+        return t('Limit Order')
+      case 'cross-chain-farm':
+        return t('Farming')
+      case 'migrate-v3':
+        return t('Migration')
+      case 'bridge-icake':
+        return t('IFO')
+      case 'claim-liquid-staking':
+        return t('Liquid Staking')
+      default:
+        return type
+    }
+  }, [type, t])
 }

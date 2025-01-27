@@ -1,5 +1,5 @@
 import { Coin, PAIR_LP_TYPE_TAG, Token } from '@pancakeswap/aptos-swap-sdk'
-import { APTOS_COIN, isStructTag, useAccount, useAccountBalance, useAccountBalances } from '@pancakeswap/awgmi'
+import { APTOS_COIN, isStructTag, useAccount, useBalance, useAccountBalances } from '@pancakeswap/awgmi'
 import { useTranslation } from '@pancakeswap/localization'
 import {
   AddCircleIcon,
@@ -18,7 +18,7 @@ import {
   RowFixed,
   Text,
 } from '@pancakeswap/uikit'
-import replaceBrowserHistory from '@pancakeswap/utils/replaceBrowserHistory'
+import replaceBrowserHistoryMultiple from '@pancakeswap/utils/replaceBrowserHistoryMultiple'
 import { CoinRegisterButton } from 'components/CoinRegisterButton'
 import { CurrencyLogo } from 'components/Logo'
 import { L0_USDC } from 'config/coins'
@@ -52,7 +52,7 @@ const Footer = styled.div`
 
 function CoinRegisterButtonWithHooks({ token }: { token: Token }) {
   const { account } = useAccount()
-  const { data, isLoading } = useAccountBalance({
+  const { data, isLoading } = useBalance({
     address: account?.address,
     coin: token.address,
     enabled: !!token,
@@ -97,13 +97,17 @@ export default function ManageTokens({
   const clearQuery = useCallback(
     (address: string) => {
       if (query.inputCurrency === address || INPUT.currencyId === address) {
-        replaceBrowserHistory('inputCurrency', APTOS_COIN)
         dispatch(selectCurrency({ field: Field.INPUT, currencyId: APTOS_COIN }))
       }
       if (query.outputCurrency === address || OUTPUT.currencyId === address) {
-        replaceBrowserHistory('outputCurrency', L0_USDC[chainId]?.address)
         dispatch(selectCurrency({ field: Field.OUTPUT, currencyId: L0_USDC[chainId]?.address }))
       }
+      replaceBrowserHistoryMultiple({
+        ...((query.inputCurrency === address || INPUT.currencyId === address) && { inputCurrency: APTOS_COIN }),
+        ...((query.outputCurrency === address || OUTPUT.currencyId === address) && {
+          outputCurrency: L0_USDC[chainId]?.address,
+        }),
+      })
     },
     [INPUT.currencyId, OUTPUT.currencyId, chainId, dispatch, query.inputCurrency, query.outputCurrency],
   )

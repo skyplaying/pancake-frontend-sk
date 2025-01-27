@@ -1,5 +1,80 @@
 # @pancakeswap/tokens
 
+## 0.6.29
+
+### Patch Changes
+
+- Updated dependencies [36f8955]
+  - @pancakeswap/sdk@5.8.10
+
+## 0.6.28
+
+### Patch Changes
+
+- @pancakeswap/sdk@5.8.9
+- @pancakeswap/token-lists@0.0.14
+
+## 0.6.27
+
+### Patch Changes
+
+- 8218dbf: List new tokens
+
+## 0.6.26
+
+### Patch Changes
+
+- 72fb1db: Listed new tokens & farms & gauges config
+- Updated dependencies [f3e8a77]
+  - @pancakeswap/token-lists@0.0.13
+
+## 0.6.25
+
+### Patch Changes
+
+- 6d4ecf0: List farm, pool, gauges
+
+## 0.6.24
+
+### Patch Changes
+
+- 103dd63: List USDT-BITU stable pool
+- c6e9e02: Added WSI token on bsc
+
+## 0.6.23
+
+### Patch Changes
+
+- @pancakeswap/sdk@5.8.8
+- @pancakeswap/token-lists@0.0.12
+
+## 0.6.22
+
+### Patch Changes
+
+- 4628ab7: Add Subsquid (SQD) token and SQD-ETH farm on Arbitrum
+- 8f573cf: list ZKE & RF
+
+## 0.6.21
+
+### Patch Changes
+
+- Updated dependencies [9a16780]
+  - @pancakeswap/chains@0.4.6
+  - @pancakeswap/sdk@5.8.7
+  - @pancakeswap/token-lists@0.0.11
+
+## 0.6.20
+
+### Patch Changes
+
+- 5fa28e0: Add Holdstation(HOLD) token on zkSync
+- 95cfa0c: fix zkSync USDT+ decimals
+- Updated dependencies [b9c91d1]
+  - @pancakeswap/chains@0.4.5
+  - @pancakeswap/sdk@5.8.6
+  - @pancakeswap/token-lists@0.0.11
+
 ## 0.6.19
 
 ### Patch Changes

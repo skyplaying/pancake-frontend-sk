@@ -1,18 +1,19 @@
 import { useTranslation } from '@pancakeswap/localization'
+import { bscTokens } from '@pancakeswap/tokens'
 import { Flex, FlexLayout, Heading, PageHeader, ToggleView, ViewMode } from '@pancakeswap/uikit'
 import { Pool } from '@pancakeswap/widgets-internal'
-import Page from 'components/Layout/Page'
-import { useMemo, useState } from 'react'
-import min from 'lodash/min'
-import max from 'lodash/max'
 import BigNumber from 'bignumber.js'
-import { bscTokens } from '@pancakeswap/tokens'
+import Page from 'components/Layout/Page'
+import max from 'lodash/max'
+import min from 'lodash/min'
 import partition from 'lodash/partition'
+import { useMemo, useState } from 'react'
 import { Address } from 'viem'
 
-import { useStakedPools, useStakedPositionsByUser } from './hooks/useStakedPools'
+import { isAddressEqual } from 'utils'
 import { FixedStakingCard } from './components/FixedStakingCard'
 import FixedStakingRow from './components/FixedStakingRow'
+import { useStakedPools, useStakedPositionsByUser } from './hooks/useStakedPools'
 import { FixedStakingPool } from './type'
 
 const FixedStaking = () => {
@@ -97,8 +98,8 @@ const FixedStaking = () => {
             {sortedPoolGroup.map((key) => (
               <FixedStakingRow
                 key={key}
-                stakedPositions={stakedPositions.filter(
-                  ({ pool: stakedPool }) => stakedPool.token.address === poolGroup[key].token.address,
+                stakedPositions={stakedPositions.filter(({ pool: stakedPool }) =>
+                  isAddressEqual(stakedPool.token.address, poolGroup[key].token.address),
                 )}
                 pool={poolGroup[key]}
               />
@@ -110,8 +111,8 @@ const FixedStaking = () => {
               <FixedStakingCard
                 key={key}
                 pool={poolGroup[key]}
-                stakedPositions={stakedPositions.filter(
-                  ({ pool: stakedPool }) => stakedPool.token.address === poolGroup[key].token.address,
+                stakedPositions={stakedPositions.filter(({ pool: stakedPool }) =>
+                  isAddressEqual(stakedPool.token.address, poolGroup[key].token.address),
                 )}
               />
             ))}

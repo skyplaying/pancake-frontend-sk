@@ -1,15 +1,15 @@
-import { ReactNode } from 'react'
-import { Text, Flex, Box, Skeleton, TooltipText, useTooltip, IfoSkeletonCardDetails } from '@pancakeswap/uikit'
-import { PublicIfoData, WalletIfoData } from 'views/Ifos/types'
 import { useTranslation } from '@pancakeswap/localization'
-import { Ifo, PoolIds } from 'config/constants/types'
-import BigNumber from 'bignumber.js'
-import { getBalanceNumber, formatNumber } from '@pancakeswap/utils/formatBalance'
-import useStablePrice from 'hooks/useStablePrice'
+import { Box, Flex, IfoSkeletonCardDetails, Skeleton, Text, TooltipText, useTooltip } from '@pancakeswap/uikit'
+import { formatNumber, getBalanceNumber } from '@pancakeswap/utils/formatBalance'
 import { DAY_IN_SECONDS } from '@pancakeswap/utils/getTimePeriods'
-import { getStatus } from 'views/Ifos/hooks/helpers'
-import { multiplyPriceByAmount } from 'utils/prices'
+import BigNumber from 'bignumber.js'
+import { Ifo, PoolIds } from 'config/constants/types'
 import useLedgerTimestamp from 'hooks/useLedgerTimestamp'
+import useStablePrice from 'hooks/useStablePrice'
+import { ReactNode } from 'react'
+import { multiplyPriceByAmount } from 'utils/prices'
+import { getStatus } from 'views/Ifos/hooks/helpers'
+import { PublicIfoData, WalletIfoData } from 'views/Ifos/types'
 
 export interface IfoCardDetailsProps {
   poolId: PoolIds
@@ -159,7 +159,9 @@ const IfoCardDetails: React.FC<React.PropsWithChildren<IfoCardDetailsProps>> = (
         <>
           {tokenEntry}
           <FooterEntry label={t('Funds to raise:')} value={ifo[poolId].raiseAmount} />
-          {ifo[poolId].cakeToBurn !== '$0' && <FooterEntry label={t('CAKE to burn:')} value={ifo[poolId].cakeToBurn} />}
+          {ifo[poolId].cakeToBurn !== '$0' ? (
+            <FooterEntry label={t('CAKE to burn:')} value={ifo[poolId].cakeToBurn} />
+          ) : null}
           <FooterEntry
             label={t('Price per %symbol%:', { symbol: ifo.token.symbol })}
             value={`$${ifo.tokenOfferingPrice}`}
@@ -186,13 +188,13 @@ const IfoCardDetails: React.FC<React.PropsWithChildren<IfoCardDetailsProps>> = (
           )}
           <FooterEntry label={t('Total committed:')} value={currencyPriceInUSD.gt(0) ? totalCommitted : null} />
           <FooterEntry label={t('Funds to raise:')} value={ifo[poolId].raiseAmount} />
-          {ifo.version >= 3.2 && poolCharacteristic.vestingInformation.percentage > 0 && (
+          {ifo.version >= 3.2 && poolCharacteristic.vestingInformation.percentage > 0 ? (
             <>
               <FooterEntry
                 label={t('Vested percentage:')}
                 value={`${poolCharacteristic.vestingInformation.percentage}%`}
                 tooltipContent={t(
-                  '%percentageVested%% of the purchased token will get vested and released linearly over a period of time. %percentageTgeRelease%% of the purchased token will be released immediately and available for claiming when IFO ends.',
+                  '%percentageVested%% of the purchased token will be released at the end of the vesting schedule. %percentageTgeRelease%% of the purchased token will be released immediately and available for claiming when IFO ends.',
                   {
                     percentageVested: poolCharacteristic.vestingInformation.percentage,
                     percentageTgeRelease: new BigNumber(100)
@@ -204,12 +206,12 @@ const IfoCardDetails: React.FC<React.PropsWithChildren<IfoCardDetailsProps>> = (
               <FooterEntry
                 label={t('Vesting schedule:')}
                 value={`${vestingDays} days`}
-                tooltipContent={t('The vested tokens will be released linearly over a period of %days% days.', {
+                tooltipContent={t('The vested tokens will be released at the end of %countdown%.', {
                   days: vestingDays,
                 })}
               />
             </>
-          )}
+          ) : null}
         </>
       )
     }
@@ -221,19 +223,21 @@ const IfoCardDetails: React.FC<React.PropsWithChildren<IfoCardDetailsProps>> = (
           {poolId === PoolIds.poolUnlimited && <FooterEntry label={t('Additional fee:')} value={taxRate} />}
           <FooterEntry label={t('Total committed:')} value={currencyPriceInUSD.gt(0) ? totalCommitted : null} />
           <FooterEntry label={t('Funds to raise:')} value={ifo[poolId].raiseAmount} />
-          {ifo[poolId].cakeToBurn !== '$0' && <FooterEntry label={t('CAKE to burn:')} value={ifo[poolId].cakeToBurn} />}
-          {ifo.version > 1 && (
+          {ifo[poolId].cakeToBurn !== '$0' ? (
+            <FooterEntry label={t('CAKE to burn:')} value={ifo[poolId].cakeToBurn} />
+          ) : null}
+          {ifo.version > 1 ? (
             <FooterEntry
               label={t('Price per %symbol%:', { symbol: ifo.token.symbol })}
               value={`$${ifo.tokenOfferingPrice ? ifo.tokenOfferingPrice : '?'}`}
             />
-          )}
-          {ifo.version > 1 && poolId === PoolIds.poolUnlimited && (
+          ) : null}
+          {ifo.version > 1 && poolId === PoolIds.poolUnlimited ? (
             <FooterEntry
               label={t('Price per %symbol% with fee:', { symbol: ifo.token.symbol })}
               value={pricePerTokenWithFee}
             />
-          )}
+          ) : null}
         </>
       )
     }

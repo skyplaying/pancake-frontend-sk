@@ -1,5 +1,5 @@
 import { ChainId } from '@pancakeswap/chains'
-import { getFarmConfig } from '@pancakeswap/farms/constants'
+import { getLegacyFarmConfig } from '@pancakeswap/farms'
 import { ERC20Token, Pair } from '@pancakeswap/sdk'
 import { deserializeToken } from '@pancakeswap/token-lists'
 import { useFeeData } from '@pancakeswap/wagmi'
@@ -62,7 +62,7 @@ export function useSubgraphHealthIndicatorManager() {
   return [isSubgraphHealthIndicatorDisplayed, setSubgraphHealthIndicatorDisplayedPreference] as const
 }
 
-export function useUserFarmStakedOnly(isActive: boolean): [boolean, (stakedOnly: boolean) => void] {
+export function useUserFarmStakedOnly(isActive: boolean): [boolean, (stakedOnly: boolean) => void, () => void] {
   const dispatch = useAppDispatch()
   const userFarmStakedOnly = useSelector<AppState, AppState['user']['userFarmStakedOnly']>((state) => {
     return state.user.userFarmStakedOnly
@@ -76,10 +76,15 @@ export function useUserFarmStakedOnly(isActive: boolean): [boolean, (stakedOnly:
     [dispatch],
   )
 
-  return [
-    userFarmStakedOnly === FarmStakedOnly.ON_FINISHED ? !isActive : userFarmStakedOnly === FarmStakedOnly.TRUE,
-    setUserFarmStakedOnly,
-  ]
+  const booleanUserFarmStakedOnly =
+    userFarmStakedOnly === FarmStakedOnly.ON_FINISHED ? !isActive : userFarmStakedOnly === FarmStakedOnly.TRUE
+
+  const toggleUserFarmStakedOnly = useCallback(
+    () => setUserFarmStakedOnly(!booleanUserFarmStakedOnly),
+    [setUserFarmStakedOnly, booleanUserFarmStakedOnly],
+  )
+
+  return [booleanUserFarmStakedOnly, setUserFarmStakedOnly, toggleUserFarmStakedOnly]
 }
 
 export function useUserPoolStakedOnly(): [boolean, (stakedOnly: boolean) => void] {
@@ -283,17 +288,20 @@ export function useFeeDataWithGasPrice(chainIdOverride?: number): {
 
 const DEFAULT_BSC_GAS_BIGINT = BigInt(GAS_PRICE_GWEI.default)
 const DEFAULT_BSC_TESTNET_GAS_BIGINT = BigInt(GAS_PRICE_GWEI.testnet)
+
 /**
  * Note that this hook will only works well for BNB chain
  */
-export function useGasPrice(chainIdOverride?: number): bigint | undefined {
-  const { chainId: chainId_ } = useActiveChainId()
+export function useDefaultGasPrice(chainIdOverride?: number, enabled = true): bigint | undefined {
+  const { chainId: chainId_, isWrongNetwork } = useActiveChainId()
   const chainId = chainIdOverride ?? chainId_
-  const { data: signer } = useWalletClient({ chainId })
-  const userGas = useSelector<AppState, AppState['user']['gasPrice']>((state) => state.user.gasPrice)
-  const { data: bscProviderGasPrice = DEFAULT_BSC_GAS_BIGINT } = useQuery({
-    queryKey: ['bscProviderGasPrice', signer],
 
+  const { data: signer } = useWalletClient({ chainId })
+
+  const queryEnabled = Boolean(!isWrongNetwork && signer && chainId === ChainId.BSC && enabled)
+
+  const { data: defaultGasPrice } = useQuery({
+    queryKey: ['bscProviderGasPrice', signer],
     queryFn: async () => {
       // @ts-ignore
       const gasPrice = await signer?.request({
@@ -301,11 +309,24 @@ export function useGasPrice(chainIdOverride?: number): bigint | undefined {
       })
       return hexToBigInt(gasPrice as Hex)
     },
-
-    enabled: Boolean(signer && chainId === ChainId.BSC && userGas === GAS_PRICE_GWEI.rpcDefault),
+    enabled: queryEnabled,
+    placeholderData: queryEnabled ? DEFAULT_BSC_GAS_BIGINT : undefined,
+    refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
   })
+
+  return defaultGasPrice
+}
+
+/**
+ * Note that this hook will only works well for BNB chain
+ */
+export function useGasPrice(chainIdOverride?: number): bigint | undefined {
+  const { chainId: chainId_ } = useActiveChainId()
+  const chainId = chainIdOverride ?? chainId_
+  const userGas = useSelector<AppState, AppState['user']['gasPrice']>((state) => state.user.gasPrice)
+  const bscProviderGasPrice = useDefaultGasPrice(chainIdOverride, userGas === GAS_PRICE_GWEI.rpcDefault)
   if (chainId === ChainId.BSC) {
     return userGas === GAS_PRICE_GWEI.rpcDefault ? bscProviderGasPrice : BigInt(userGas ?? GAS_PRICE_GWEI.default)
   }
@@ -370,7 +391,7 @@ export function useTrackedTokenPairs(): [ERC20Token, ERC20Token][] {
     queryKey: ['track-farms-pairs', chainId],
 
     queryFn: async () => {
-      const farms = await getFarmConfig(chainId)
+      const farms = await getLegacyFarmConfig(chainId)
 
       const fPairs: [ERC20Token, ERC20Token][] | undefined = farms
         ?.filter((farm) => farm.pid !== 0)

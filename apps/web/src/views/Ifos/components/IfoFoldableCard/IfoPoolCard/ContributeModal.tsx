@@ -1,12 +1,13 @@
-import { parseEther, parseUnits } from 'viem'
+import { Ifo, PoolIds } from '@pancakeswap/ifos'
 import { useTranslation } from '@pancakeswap/localization'
+import { MaxUint256 } from '@pancakeswap/swap-sdk-core'
 import { CAKE } from '@pancakeswap/tokens'
-import { getFullDecimalMultiplier } from '@pancakeswap/utils/getFullDecimalMultiplier'
 import {
   BalanceInput,
   Box,
   Button,
   Flex,
+  IfoHasVestingNotice,
   Image,
   Link,
   Modal,
@@ -15,16 +16,17 @@ import {
   TooltipText,
   useToast,
   useTooltip,
-  IfoHasVestingNotice,
 } from '@pancakeswap/uikit'
+import { formatNumber, getBalanceAmount } from '@pancakeswap/utils/formatBalance'
+import { getFullDecimalMultiplier } from '@pancakeswap/utils/getFullDecimalMultiplier'
 import BigNumber from 'bignumber.js'
 import ApproveConfirmButtons from 'components/ApproveConfirmButtons'
 import { ToastDescriptionWithTx } from 'components/Toast'
-import { Ifo, PoolIds } from '@pancakeswap/ifos'
 import useApproveConfirmTransaction from 'hooks/useApproveConfirmTransaction'
 import { useCallWithGasPrice } from 'hooks/useCallWithGasPrice'
 import { useMemo, useState } from 'react'
-import { formatNumber, getBalanceAmount } from '@pancakeswap/utils/formatBalance'
+import { logGTMIfoCommitTxnSentEvent } from 'utils/customGTMEventTracking'
+import { parseUnits } from 'viem'
 import { PublicIfoData, WalletIfoData } from 'views/Ifos/types'
 
 interface Props {
@@ -39,9 +41,6 @@ interface Props {
 }
 
 const multiplierValues = [0.1, 0.25, 0.5, 0.75, 1]
-
-// Default value for transaction setting, tweak based on BSC network congestion.
-const gasPrice = parseEther('10', 'gwei')
 
 const ContributeModal: React.FC<React.PropsWithChildren<Props>> = ({
   poolId,
@@ -66,7 +65,8 @@ const ContributeModal: React.FC<React.PropsWithChildren<Props>> = ({
   const { callWithGasPrice } = useCallWithGasPrice()
   const { t } = useTranslation()
   const multiplier = useMemo(() => getFullDecimalMultiplier(currency.decimals), [currency])
-  const valueWithTokenDecimals = new BigNumber(value).times(multiplier)
+  const valueWithTokenDecimals = useMemo(() => new BigNumber(value).times(multiplier), [value, multiplier])
+
   const cake = CAKE[ifo.chainId]
   const label = cake ? t('Max. CAKE entry') : t('Max. token entry')
 
@@ -84,16 +84,13 @@ const ContributeModal: React.FC<React.PropsWithChildren<Props>> = ({
         )
       },
       onConfirm: () => {
-        return callWithGasPrice(
-          contract as any,
-          'depositPool',
-          [valueWithTokenDecimals.integerValue(), poolId === PoolIds.poolBasic ? 0 : 1],
-          {
-            gasPrice,
-          },
-        )
+        return callWithGasPrice(contract as any, 'depositPool', [
+          valueWithTokenDecimals.integerValue(),
+          poolId === PoolIds.poolBasic ? 0 : 1,
+        ])
       },
       onSuccess: async ({ receipt }) => {
+        logGTMIfoCommitTxnSentEvent(poolId)
         await onSuccess(valueWithTokenDecimals, receipt.transactionHash)
         onDismiss?.()
       },
@@ -102,6 +99,9 @@ const ContributeModal: React.FC<React.PropsWithChildren<Props>> = ({
   // in v3 max token entry is based on ifo credit and hard cap limit per user minus amount already committed
   const maximumTokenEntry = useMemo(() => {
     if (!creditLeft || (ifo.version >= 3.1 && poolId === PoolIds.poolBasic)) {
+      // limit of 0 in Basic Sale means Unlimited
+      if (limitPerUserInLP?.isEqualTo(0)) return BigNumber(MaxUint256.toString())
+
       return limitPerUserInLP?.minus(amountTokenCommittedInLP || new BigNumber(0))
     }
     if (limitPerUserInLP?.isGreaterThan(0)) {
@@ -117,9 +117,14 @@ const ContributeModal: React.FC<React.PropsWithChildren<Props>> = ({
     return maximumTokenEntry?.isLessThanOrEqualTo(userCurrencyBalance) ? maximumTokenEntry : userCurrencyBalance
   }, [maximumTokenEntry, userCurrencyBalance])
 
-  const basicTooltipContent = t(
-    'For the private sale, each eligible participant will be able to commit any amount of CAKE up to the maximum commit limit, which is published along with the IFO voting proposal.',
-  )
+  const basicTooltipContent =
+    ifo.version >= 3.1
+      ? t(
+          'For the basic sale, Max CAKE entry is capped by minimum between your average CAKE balance in the iCAKE, or the pool’s hard cap. To increase the max entry, Stake more CAKE into the iCAKE',
+        )
+      : t(
+          'For the private sale, each eligible participant will be able to commit any amount of CAKE up to the maximum commit limit, which is published along with the IFO voting proposal.',
+        )
 
   const unlimitedToolipContent = (
     <Box>
@@ -149,11 +154,15 @@ const ContributeModal: React.FC<React.PropsWithChildren<Props>> = ({
           <Flex justifyContent="space-between" mb="16px">
             {tooltipVisible && tooltip}
             <TooltipText ref={targetRef}>{label}:</TooltipText>
-            <Text>{`${formatNumber(
-              getBalanceAmount(maximumTokenEntry || new BigNumber(0), currency.decimals).toNumber(),
-              3,
-              3,
-            )} ${ifo.currency.symbol}`}</Text>
+            <Text>
+              {limitPerUserInLP?.isEqualTo(0) && poolId === PoolIds.poolBasic
+                ? t('No limit')
+                : `${formatNumber(
+                    getBalanceAmount(maximumTokenEntry || new BigNumber(0), currency.decimals).toNumber(),
+                    3,
+                    3,
+                  )} ${ifo.currency.symbol}`}
+            </Text>
           </Flex>
           <Flex justifyContent="space-between" mb="8px">
             <Text>{t('Commit')}:</Text>
@@ -202,21 +211,25 @@ const ContributeModal: React.FC<React.PropsWithChildren<Props>> = ({
             })}
           </Text>
           <Flex justifyContent="space-between" mb="16px">
-            {multiplierValues.map((multiplierValue, index) => (
-              <Button
-                key={multiplierValue}
-                scale="xs"
-                variant="tertiary"
-                onClick={() => setValue(getBalanceAmount(maximumTokenCommittable.times(multiplierValue)).toString())}
-                mr={index < multiplierValues.length - 1 ? '8px' : 0}
-              >
-                {multiplierValue * 100}%
-              </Button>
-            ))}
+            {multiplierValues.map((multiplierValue, index) => {
+              const multiplierResultValue = getBalanceAmount(maximumTokenCommittable.times(multiplierValue)).toString()
+              return (
+                <Button
+                  key={multiplierValue}
+                  scale="xs"
+                  variant={value === multiplierResultValue ? 'primary' : 'tertiary'}
+                  onClick={() => setValue(multiplierResultValue)}
+                  mr={index < multiplierValues.length - 1 ? '8px' : 0}
+                  width="100%"
+                >
+                  {multiplierValue * 100}%
+                </Button>
+              )
+            })}
           </Flex>
-          {vestingInformation?.percentage && vestingInformation.percentage > 0 && (
+          {vestingInformation?.percentage && vestingInformation.percentage > 0 ? (
             <IfoHasVestingNotice url={articleUrl} />
-          )}
+          ) : null}
           <Text color="textSubtle" fontSize="12px" mb="24px">
             {t(
               'If you don’t commit enough CAKE, you may not receive a meaningful amount of IFO tokens, or you may not receive any IFO tokens at all.',

@@ -1,11 +1,12 @@
 import { ChainId } from '@pancakeswap/chains'
 import { useTranslation } from '@pancakeswap/localization'
 import { WrappedTokenInfo } from '@pancakeswap/token-lists'
-import { Box, Heading, Message, ModalBody, ModalContainer, ModalHeader } from '@pancakeswap/uikit'
+import { Acknowledgement, Box, Heading, Message, ModalBody, ModalContainer, ModalHeader } from '@pancakeswap/uikit'
 import { useActiveChainId } from 'hooks/useActiveChainId'
 import useTheme from 'hooks/useTheme'
 import { styled } from 'styled-components'
-import Acknowledgement from './Acknowledgement'
+import ARB_WARNING_LIST from './arbitrum'
+import BASE_WARNING_LIST from './base'
 import BSC_WARNING_LIST from './bsc'
 import ETH_WARNING_LIST from './mainnet'
 import ZKSYNC_WARNING_LIST from './zksync'
@@ -33,6 +34,8 @@ const SwapWarningModal: React.FC<React.PropsWithChildren<SwapWarningModalProps>>
     [ChainId.ETHEREUM]: ETH_WARNING_LIST,
     [ChainId.BSC]: BSC_WARNING_LIST,
     [ChainId.ZKSYNC]: ZKSYNC_WARNING_LIST,
+    [ChainId.BASE]: BASE_WARNING_LIST,
+    [ChainId.ARBITRUM_ONE]: ARB_WARNING_LIST,
   }
 
   const SWAP_WARNING = chainId ? TOKEN_WARNINGS?.[chainId]?.[swapCurrency.address] : undefined

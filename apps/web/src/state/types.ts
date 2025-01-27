@@ -14,9 +14,9 @@ import { Address, parseEther } from 'viem'
 import { NftToken } from './nftMarket/types'
 
 export enum GAS_PRICE {
-  default = '1',
-  fast = '4',
-  instant = '5',
+  default = '5',
+  fast = '6',
+  instant = '7',
   testnet = '10',
 }
 
@@ -200,6 +200,8 @@ export interface Round {
   bearBets: number
   bearAmount: number
   bets?: Bet[]
+
+  AIPrice?: number
 }
 
 export interface Market {
@@ -284,8 +286,13 @@ export interface ReduxNodeRound {
   rewardBaseCalAmount: string
   rewardAmount: string
   oracleCalled: boolean
-  lockOracleId: string | null
-  closeOracleId: string | null
+
+  // PredictionsV2
+  lockOracleId?: string | null
+  closeOracleId?: string | null
+
+  // AI Predictions
+  AIPrice?: string | null
 }
 
 export interface NodeRound {
@@ -301,8 +308,13 @@ export interface NodeRound {
   rewardBaseCalAmount: bigint | null
   rewardAmount: bigint | null
   oracleCalled: boolean
-  closeOracleId: string | null
-  lockOracleId: string | null
+
+  // PredictionsV2
+  lockOracleId?: string | null
+  closeOracleId?: string | null
+
+  // AI Predictions
+  AIPrice?: bigint | null
 }
 
 export type LeaderboardFilterTimePeriod = '1d' | '7d' | '1m' | 'all'
@@ -379,6 +391,11 @@ export enum ProposalState {
   CLOSED = 'closed',
 }
 
+export enum ProposalTypeName {
+  SINGLE_CHOICE = 'single-choice',
+  WEIGHTED = 'weighted',
+}
+
 export interface Proposal {
   author: string
   body: string
@@ -390,6 +407,10 @@ export interface Proposal {
   start: number
   state: ProposalState
   title: string
+  ipfs: string
+  type: ProposalTypeName
+  scores: number[]
+  scores_total: number
 }
 
 export interface Vote {
@@ -404,6 +425,7 @@ export interface Vote {
     votingPower: string
   }
   vp: number
+  ipfs: string
 }
 
 export interface LotteryRoundUserTickets {

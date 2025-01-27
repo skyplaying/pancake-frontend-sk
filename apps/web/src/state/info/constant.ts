@@ -1,23 +1,9 @@
-import {
-  BLOCKS_CLIENT,
-  BLOCKS_CLIENT_BASE,
-  BLOCKS_CLIENT_ETH,
-  BLOCKS_CLIENT_LINEA,
-  BLOCKS_CLIENT_OPBNB,
-  BLOCKS_CLIENT_ZKSYNC,
-} from 'config/constants/endpoints'
 import { GraphQLClient } from 'graphql-request'
 import { infoStableSwapClients, v2Clients } from 'utils/graphql'
 
-import { ChainId } from '@pancakeswap/chains'
-import {
-  BSC_TOKEN_WHITELIST,
-  ETH_TOKEN_BLACKLIST,
-  ETH_TOKEN_WHITELIST,
-  PCS_ETH_START,
-  PCS_V2_START,
-  TOKEN_BLACKLIST,
-} from 'config/constants/info'
+import { ChainId, isTestnetChainId } from '@pancakeswap/chains'
+import { STABLE_SUPPORTED_CHAIN_IDS } from '@pancakeswap/stable-swap-sdk'
+import { BSC_TOKEN_WHITELIST, ETH_TOKEN_BLACKLIST, ETH_TOKEN_WHITELIST, TOKEN_BLACKLIST } from 'config/constants/info'
 import mapValues from 'lodash/mapValues'
 import { arbitrum, base, bsc, linea, mainnet, opBNB, polygonZkEvm, zkSync } from 'wagmi/chains'
 
@@ -52,30 +38,6 @@ export const multiChainQueryMainToken: Record<MultiChainName, string> = {
   OPBNB: 'ETH',
 }
 
-export const multiChainBlocksClient: Record<MultiChainNameExtend, string> = {
-  BSC: BLOCKS_CLIENT,
-  ETH: BLOCKS_CLIENT_ETH,
-  BSC_TESTNET: 'https://api.thegraph.com/subgraphs/name/lengocphuc99/bsc_testnet-blocks',
-  POLYGON_ZKEVM: 'https://api.studio.thegraph.com/query/45376/polygon-zkevm-block/version/latest',
-  ZKSYNC_TESTNET: 'https://api.studio.thegraph.com/query/45376/blocks-zksync-testnet/version/latest',
-  ZKSYNC: BLOCKS_CLIENT_ZKSYNC,
-  ARB: 'https://api.thegraph.com/subgraphs/name/ianlapham/arbitrum-one-blocks',
-  LINEA: BLOCKS_CLIENT_LINEA,
-  BASE: BLOCKS_CLIENT_BASE,
-  OPBNB: BLOCKS_CLIENT_OPBNB,
-}
-
-export const multiChainStartTime = {
-  BSC: PCS_V2_START,
-  ETH: PCS_ETH_START,
-  POLYGON_ZKEVM: 1686236845,
-  ZKSYNC: 1690462800, // Thu Jul 27 2023 13:00:00 UTC+0000
-  ARB: 1686732526,
-  LINEA: 1692878400,
-  BASE: 1693483200,
-  OPBNB: 1695945600,
-}
-
 export const multiChainId: Record<MultiChainName, ChainId> = {
   BSC: ChainId.BSC,
   ETH: ChainId.ETHEREUM,
@@ -98,21 +60,21 @@ export const multiChainPaths = {
   [ChainId.OPBNB]: '/opbnb',
 }
 
-export const multiChainQueryStableClient = {
-  BSC: infoStableSwapClients[ChainId.BSC],
-  ARB: infoStableSwapClients[ChainId.ARBITRUM_ONE],
-}
+export const multiChainQueryStableClient = STABLE_SUPPORTED_CHAIN_IDS.reduce((acc, chainId) => {
+  if (isTestnetChainId(chainId)) return acc
+  return { ...acc, [multiChainName[chainId]]: infoStableSwapClients[chainId] }
+}, {} as Record<MultiChainName, GraphQLClient>)
 
 export const infoChainNameToExplorerChainName = {
-  BSC: ChainId.BSC,
-  ETH: ChainId.ETHEREUM,
-  POLYGON_ZKEVM: ChainId.POLYGON_ZKEVM,
-  ZKSYNC: ChainId.ZKSYNC,
-  ARB: ChainId.ARBITRUM_ONE,
-  LINEA: ChainId.LINEA,
-  BASE: ChainId.BASE,
-  OPBNB: ChainId.OPBNB,
-}
+  BSC: 'bsc',
+  ETH: 'ethereum',
+  POLYGON_ZKEVM: 'polygon-zkevm',
+  ZKSYNC: 'zksync',
+  ARB: 'arbitrum',
+  LINEA: 'linea',
+  BASE: 'base',
+  OPBNB: 'opbnb',
+} as const
 
 export const STABLESWAP_SUBGRAPHS_START_BLOCK = {
   ARB: 169319653,
@@ -127,6 +89,14 @@ export const multiChainScan: Record<MultiChainName, string> = {
   LINEA: linea.blockExplorers.default.name,
   BASE: base.blockExplorers.default.name,
   OPBNB: opBNB.blockExplorers.default.name,
+}
+
+/** Override Explorer Names if default for chain is "Etherscan" */
+export const multiChainScanName: Partial<Record<ChainId, string>> = {
+  [ChainId.ZKSYNC]: 'ZKSync Explorer',
+  [ChainId.ZKSYNC_TESTNET]: 'ZKSync Explorer',
+  [ChainId.LINEA]: 'LineaScan',
+  [ChainId.LINEA_TESTNET]: 'LineaScan',
 }
 
 export const multiChainTokenBlackList: Record<MultiChainName, string[]> = mapValues(

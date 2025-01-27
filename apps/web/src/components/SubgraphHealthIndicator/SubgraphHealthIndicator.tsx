@@ -3,8 +3,7 @@ import { styled } from 'styled-components'
 import { Card, Flex, Box, InfoIcon, Text, useTooltip } from '@pancakeswap/uikit'
 import { useSubgraphHealthIndicatorManager } from 'state/user/hooks'
 import useSubgraphHealth, { SubgraphStatus } from 'hooks/useSubgraphHealth'
-import { AVERAGE_CHAIN_BLOCK_TIMES } from 'config/constants/averageChainBlockTimes'
-import { ChainId, chainNames, getChainName } from '@pancakeswap/chains'
+import { AVERAGE_CHAIN_BLOCK_TIMES, ChainId, chainNames, getChainName } from '@pancakeswap/chains'
 import { useMemo } from 'react'
 
 const StyledCard = styled(Card)`
@@ -95,7 +94,7 @@ export interface BlockResponse {
 
 export type SubgraphHealthIndicatorProps = React.PropsWithChildren<{
   chainId: ChainId
-  subgraphName: string
+  subgraph: string
   inline?: boolean
   customDescriptions?: CustomDescriptions
   obeyGlobalSetting?: boolean
@@ -103,13 +102,13 @@ export type SubgraphHealthIndicatorProps = React.PropsWithChildren<{
 
 export const SubgraphHealthIndicator: React.FC<SubgraphHealthIndicatorProps> = ({
   chainId,
-  subgraphName,
+  subgraph,
   inline,
   customDescriptions,
   obeyGlobalSetting = true,
 }) => {
   const { t } = useTranslation()
-  const { status, currentBlock, blockDifference, latestBlock } = useSubgraphHealth({ chainId, subgraphName })
+  const { status, currentBlock, blockDifference, latestBlock } = useSubgraphHealth({ chainId, subgraph })
   const [alwaysShowIndicator] = useSubgraphHealthIndicatorManager()
   const forceIndicatorDisplay =
     status === SubgraphStatus.WARNING || status === SubgraphStatus.NOT_OK || status === SubgraphStatus.DOWN

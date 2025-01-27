@@ -6,10 +6,10 @@ import { FarmWidget } from '@pancakeswap/widgets-internal'
 import { createElement, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { styled } from 'styled-components'
 
-import { ChainId } from '@pancakeswap/chains'
-import { useActiveChainId } from 'hooks/useActiveChainId'
 import { useMerklInfo } from 'hooks/useMerkl'
-import { V2Farm, V3Farm } from 'views/Farms/FarmsV3'
+import { type V3Farm } from 'state/farms/types'
+import { useMerklUserLink } from 'utils/getMerklLink'
+import { V2Farm } from 'views/Farms/FarmsV3'
 import { useBCakeBoostLimitAndLockInfo } from 'views/Farms/components/YieldBooster/hooks/bCakeV3/useBCakeV3Info'
 import { RewardPerDay } from 'views/PositionManagers/components/RewardPerDay'
 import { FarmV3ApyButton } from '../FarmCard/V3/FarmV3ApyButton'
@@ -122,7 +122,6 @@ const Row: React.FunctionComponent<React.PropsWithChildren<RowPropsWithLoading>>
   const { tokenIds } = useUserBoostedPoolsTokenId()
   const { isBoosted } = useIsSomePositionBoosted(props.type === 'v3' ? props?.details?.stakedPositions : [], tokenIds)
   const { locked } = useBCakeBoostLimitAndLockInfo()
-  const { chainId } = useActiveChainId()
   const toggleActionPanel = useCallback(() => {
     setActionPanelExpanded(!actionPanelExpanded)
   }, [actionPanelExpanded])
@@ -145,8 +144,10 @@ const Row: React.FunctionComponent<React.PropsWithChildren<RowPropsWithLoading>>
     return isSmallerScreen ? MobileColumnSchema : props.type === 'v3' ? V3DesktopColumnSchema : DesktopColumnSchema
   }, [isSmallerScreen, props.type])
   const columnNames = useMemo(() => tableSchema.map((column) => column.name), [tableSchema])
+  const merklUserLink = useMerklUserLink()
 
-  const { merklApr } = useMerklInfo(farm?.merklLink ? props.details.lpAddress : null)
+  const { merklApr } = useMerklInfo(farm?.merklLink ? props.details.lpAddress : undefined)
+
   return (
     <>
       {!isMobile ? (
@@ -172,8 +173,7 @@ const Row: React.FunctionComponent<React.PropsWithChildren<RowPropsWithLoading>>
                       ) : null}
                       {props.type === 'v2' &&
                       props?.details?.bCakeWrapperAddress &&
-                      props?.details?.bCakePublicData?.isRewardInRange &&
-                      chainId === ChainId.BSC ? (
+                      props?.details?.bCakePublicData?.isRewardInRange ? (
                         <BoostedTag scale="sm" />
                       ) : null}
                       {props.type === 'v3' && <V3FeeTag feeAmount={props.details.feeAmount} scale="sm" />}
@@ -202,7 +202,14 @@ const Row: React.FunctionComponent<React.PropsWithChildren<RowPropsWithLoading>>
                     <td key={key}>
                       <CellInner>
                         <CellLayout label={t('APR')}>
-                          <FarmV3ApyButton farm={props.details} />
+                          <FarmV3ApyButton
+                            farm={props.details}
+                            additionAprInfo={
+                              merklApr && farm.merklLink
+                                ? { aprTitle: t('Merkl APR'), aprValue: merklApr, aprLink: farm.merklLink }
+                                : undefined
+                            }
+                          />
                         </CellLayout>
                       </CellInner>
                     </td>
@@ -235,8 +242,7 @@ const Row: React.FunctionComponent<React.PropsWithChildren<RowPropsWithLoading>>
                           }
                           isBooster={
                             Boolean(props?.details?.bCakeWrapperAddress) &&
-                            props?.details?.bCakePublicData?.isRewardInRange &&
-                            chainId === ChainId.BSC
+                            props?.details?.bCakePublicData?.isRewardInRange
                           }
                         />
                       </CellLayout>
@@ -289,6 +295,7 @@ const Row: React.FunctionComponent<React.PropsWithChildren<RowPropsWithLoading>>
                             chainId: props?.details?.token.chainId,
                             lpAddress: props?.details?.lpAddress,
                             merklApr,
+                            merklUserLink,
                           })}
                         </CellLayout>
                       </CellInner>
@@ -304,7 +311,12 @@ const Row: React.FunctionComponent<React.PropsWithChildren<RowPropsWithLoading>>
           <tr style={{ cursor: 'pointer' }} onClick={toggleActionPanel}>
             <FarmMobileCell colSpan={3}>
               <Flex justifyContent="space-between" alignItems="center">
-                <FarmCell {...props.farm} lpAddress={props?.details?.lpAddress} merklApr={merklApr} />
+                <FarmCell
+                  {...props.farm}
+                  lpAddress={props?.details?.lpAddress}
+                  merklApr={merklApr}
+                  merklUserLink={merklUserLink}
+                />
                 <Flex
                   mr="16px"
                   alignItems={isMobile ? 'end' : 'center'}
@@ -321,8 +333,7 @@ const Row: React.FunctionComponent<React.PropsWithChildren<RowPropsWithLoading>>
                   ) : null}
                   {props.type === 'v2' &&
                   props?.details?.bCakeWrapperAddress &&
-                  props?.details?.bCakePublicData?.isRewardInRange &&
-                  chainId === ChainId.BSC ? (
+                  props?.details?.bCakePublicData?.isRewardInRange ? (
                     <BoostedTag scale="sm" />
                   ) : null}
                   {props.type === 'v3' && <V3FeeTag feeAmount={props.details.feeAmount} scale="sm" />}
@@ -344,7 +355,14 @@ const Row: React.FunctionComponent<React.PropsWithChildren<RowPropsWithLoading>>
               <AprMobileCell>
                 <CellLayout label={t('APR')}>
                   {props.type === 'v3' ? (
-                    <FarmV3ApyButton farm={props.details} />
+                    <FarmV3ApyButton
+                      farm={props.details}
+                      additionAprInfo={
+                        merklApr && farm.merklLink
+                          ? { aprTitle: t('Merkl APR'), aprValue: merklApr, aprLink: farm.merklLink }
+                          : undefined
+                      }
+                    />
                   ) : (
                     <>
                       <Apr
@@ -360,8 +378,7 @@ const Row: React.FunctionComponent<React.PropsWithChildren<RowPropsWithLoading>>
                         totalMultipliers={multiplier.totalMultipliers}
                         isBooster={
                           Boolean(props?.details?.bCakeWrapperAddress) &&
-                          props?.details?.bCakePublicData?.isRewardInRange &&
-                          chainId === ChainId.BSC
+                          props?.details?.bCakePublicData?.isRewardInRange
                         }
                         boosterMultiplier={
                           props?.details?.bCakeWrapperAddress

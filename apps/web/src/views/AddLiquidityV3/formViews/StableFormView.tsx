@@ -6,7 +6,7 @@ import { CommitButton } from 'components/CommitButton'
 import CurrencyInputPanel from 'components/CurrencyInputPanel'
 
 import { ApprovalState } from 'hooks/useApproveCallback'
-import { Field } from 'state/mint/actions'
+import { CurrencyField as Field } from 'utils/types'
 import { logGTMClickAddLiquidityEvent } from 'utils/customGTMEventTracking'
 
 import { useTranslation } from '@pancakeswap/localization'
@@ -27,6 +27,7 @@ import { FormattedSlippage } from 'views/AddLiquidity/AddStableLiquidity/compone
 import { RowFixed } from 'components/Layout/Row'
 
 import { ReactElement } from 'react'
+import { formatAmount } from 'utils/formatInfoNumbers'
 import { HideMedium, MediumOnly, RightContainer } from './V3FormView'
 
 export default function StableFormView({
@@ -48,14 +49,15 @@ export default function StableFormView({
   poolTokenPercentage,
   pair,
   reserves,
-  stableLpFee,
+  stableTotalFee,
+  stableAPR,
   executionSlippage,
   loading,
   infoLoading,
   price,
   maxAmounts,
 }: AddStableChildrenProps & {
-  stableLpFee?: number
+  stableTotalFee?: number
 }) {
   const addIsUnsupported = useIsTransactionUnsupported(currencies?.CURRENCY_A, currencies?.CURRENCY_B)
   const addIsWarning = useIsTransactionWarning(currencies?.CURRENCY_A, currencies?.CURRENCY_B)
@@ -246,7 +248,13 @@ export default function StableFormView({
             <AutoRow justifyContent="space-between" mb="4px">
               <Text color="textSubtle">{t('Fee rate')}: </Text>
 
-              <Text>{stableLpFee ? BIG_ONE_HUNDRED.times(stableLpFee).toNumber() : '-'}%</Text>
+              <Text>{stableTotalFee ? BIG_ONE_HUNDRED.times(stableTotalFee).toNumber() : '-'}%</Text>
+            </AutoRow>
+
+            <AutoRow justifyContent="space-between" mb="4px">
+              <Text color="textSubtle">{t('LP reward APR')}: </Text>
+
+              <Text>{stableAPR ? formatAmount(stableAPR) : '-'}%</Text>
             </AutoRow>
 
             <AutoRow justifyContent="space-between" mb="16px">

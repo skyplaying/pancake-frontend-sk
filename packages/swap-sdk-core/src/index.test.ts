@@ -19,6 +19,7 @@ test('exports', () => {
       "MaxUint256",
       "VMType",
       "VM_TYPE_MAXIMA",
+      "ZERO_ADDRESS",
       "BaseCurrency",
       "Fraction",
       "Percent",
@@ -33,6 +34,8 @@ test('exports', () => {
       "sortedInsert",
       "computePriceImpact",
       "getTokenComparator",
+      "sortCurrencies",
+      "getCurrencyAddress",
     ]
   `)
 })

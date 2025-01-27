@@ -17,7 +17,6 @@ import {
   PreTitle,
   RowBetween,
   ScanLink,
-  Spinner,
   SyncAltIcon,
   Tag,
   Text,
@@ -34,12 +33,12 @@ import { useQuery } from '@tanstack/react-query'
 import { AppHeader } from 'components/App'
 import { LightGreyCard } from 'components/Card'
 import FormattedCurrencyAmount from 'components/FormattedCurrencyAmount/FormattedCurrencyAmount'
+import PageLoader from 'components/Loader/PageLoader'
 import { CurrencyLogo, DoubleCurrencyLogo } from 'components/Logo'
 import { MerklSection } from 'components/Merkl/MerklSection'
 import { MerklTag } from 'components/Merkl/MerklTag'
 import { RangePriceSection } from 'components/RangePriceSection'
 import { RangeTag } from 'components/RangeTag'
-import { V3SubgraphHealthIndicator } from 'components/SubgraphHealthIndicator'
 import TransactionConfirmationModal from 'components/TransactionConfirmationModal'
 import { Bound } from 'config/constants/types'
 import dayjs from 'dayjs'
@@ -64,6 +63,7 @@ import { NextSeo } from 'next-seo'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { ReactNode, memo, useCallback, useMemo, useState } from 'react'
+import { usePoolInfo } from 'state/farmsV4/state/extendPools/hooks'
 import { ChainLinkSupportChains } from 'state/info/constant'
 import { useSingleCallResult } from 'state/multicall/hooks'
 import { useIsTransactionPending, useTransactionAdder } from 'state/transactions/hooks'
@@ -78,9 +78,9 @@ import { getViemClients } from 'utils/viem'
 import { CHAIN_IDS } from 'utils/wagmi'
 import { unwrappedToken } from 'utils/wrappedCurrency'
 import { hexToBigInt } from 'viem'
-import { AprCalculator } from 'views/AddLiquidityV3/components/AprCalculator'
+import { AprCalculatorV2 } from 'views/AddLiquidityV3/components/AprCalculatorV2'
 import RateToggle from 'views/AddLiquidityV3/formViews/V3FormView/components/RateToggle'
-import Page from 'views/Page'
+import { PageWithoutFAQ } from 'views/Page'
 import { useSendTransaction, useWalletClient } from 'wagmi'
 
 export const BodyWrapper = styled(Card)`
@@ -232,7 +232,9 @@ export default function PoolPage() {
     return undefined
   }, [liquidity, pool, tickLower, tickUpper])
 
-  const poolAddress = useMemo(() => pool && Pool.getAddress(pool.token0, pool.token1, pool.fee), [pool])
+  const poolAddress = useMemo(() => (pool ? Pool.getAddress(pool.token0, pool.token1, pool.fee) : undefined), [pool])
+
+  const poolInfo = usePoolInfo({ poolAddress, chainId })
 
   const tickAtLimit = useIsTickAtLimit(feeAmount, tickLower, tickUpper)
 
@@ -252,16 +254,6 @@ export default function PoolPage() {
   const inverted = token1 && base ? base.equals(token1) : undefined
   const currencyQuote = inverted ? currency0 : currency1
   const currencyBase = inverted ? currency1 : currency0
-
-  // const ratio = useMemo(() => {
-  //   return priceLower && pool && priceUpper
-  //     ? getRatio(
-  //         inverted ? priceUpper.invert() : priceLower,
-  //         pool.token0Price,
-  //         inverted ? priceLower.invert() : priceUpper,
-  //       )
-  //     : undefined
-  // }, [inverted, pool, priceLower, priceUpper])
 
   // fees
   const [feeValue0, feeValue1] = useV3PositionFees(pool ?? undefined, positionDetails?.tokenId, receiveWNATIVE)
@@ -357,7 +349,7 @@ export default function PoolPage() {
 
     getViemClients({ chainId })
       ?.estimateGas(txn)
-      .then((estimate) => {
+      .then(async (estimate) => {
         const newTxn = {
           ...txn,
           gas: calculateGasMargin(estimate),
@@ -515,7 +507,7 @@ export default function PoolPage() {
               'has an active PancakeSwap farm. Stake your position in the farm to start earning with the indicated APR with CAKE farming.',
             )}
           </Text>
-          <NextLinkFromReactRouter to="/farms">
+          <NextLinkFromReactRouter to="/liquidity/pools">
             <Text display="inline" bold ml="0.25em" style={{ textDecoration: 'underline' }}>
               {t('Go to Farms')} {' >>'}
             </Text>
@@ -525,14 +517,12 @@ export default function PoolPage() {
     ) : null
 
   return (
-    <Page>
+    <Box mb="40px">
       {!isLoading && <NextSeo title={`${currencyQuote?.symbol}-${currencyBase?.symbol} V3 LP #${tokenIdFromUrl}`} />}
-      <BodyWrapper>
-        {isLoading ? (
-          <Flex width="100%" justifyContent="center" alignItems="center" minHeight="200px" mb="32px">
-            <Spinner />
-          </Flex>
-        ) : (
+      {isLoading ? (
+        <PageLoader />
+      ) : (
+        <BodyWrapper>
           <>
             <AppHeader
               title={
@@ -572,15 +562,15 @@ export default function PoolPage() {
                   </RowBetween>
                 </Box>
               }
-              backTo="/liquidity"
+              backTo="/liquidity/positions"
               noConfig
               buttons={
                 !isMobile &&
-                currency0 &&
-                currency1 && (
+                currencyQuote &&
+                currencyBase && (
                   <>
                     <NextLinkFromReactRouter
-                      to={`/increase/${currencyId(currency0)}/${currencyId(currency1)}/${feeAmount}/${tokenId}`}
+                      to={`/increase/${currencyId(currencyBase)}/${currencyId(currencyQuote)}/${feeAmount}/${tokenId}`}
                     >
                       <Button disabled={!isOwnNFT} width="100%">
                         {t('Add')}
@@ -598,10 +588,10 @@ export default function PoolPage() {
               }
             />
             <CardBody>
-              {isMobile && (
+              {isMobile && currencyQuote && currencyBase && (
                 <>
                   <NextLinkFromReactRouter
-                    to={`/increase/${currencyId(currency0)}/${currencyId(currency1)}/${feeAmount}/${tokenId}`}
+                    to={`/increase/${currencyId(currencyBase)}/${currencyId(currencyQuote)}/${feeAmount}/${tokenId}`}
                   >
                     <Button disabled={!isOwnNFT} width="100%" mb="8px">
                       {t('Add')}
@@ -628,17 +618,7 @@ export default function PoolPage() {
                 >
                   <Box width="100%" mb={['8px', '8px', 0]} position="relative">
                     <Flex position="absolute" right={0}>
-                      <AprCalculator
-                        allowApply={false}
-                        showQuestion
-                        baseCurrency={currencyBase}
-                        quoteCurrency={currencyQuote}
-                        feeAmount={feeAmount}
-                        positionDetails={positionDetails}
-                        defaultDepositUsd={fiatValueOfLiquidity?.toFixed(2)}
-                        tokenAmount0={inRange ? position?.amount0 : undefined}
-                        tokenAmount1={inRange ? position?.amount1 : undefined}
-                      />
+                      <AprCalculatorV2 tokenId={BigInt(tokenId ?? 0)} pool={poolInfo} />
                     </Flex>
                     <Text fontSize="12px" color="secondary" bold textTransform="uppercase">
                       {t('Liquidity')}
@@ -647,7 +627,9 @@ export default function PoolPage() {
                     <Text fontSize="24px" fontWeight={600} mb="8px">
                       $
                       {fiatValueOfLiquidity?.greaterThan(new Fraction(1, 100))
-                        ? fiatValueOfLiquidity.toFixed(2, { groupSeparator: ',' })
+                        ? fiatValueOfLiquidity.toFixed(2, {
+                            groupSeparator: ',',
+                          })
                         : '-'}
                     </Text>
                     <LightGreyCard
@@ -710,7 +692,9 @@ export default function PoolPage() {
                       <Text fontSize="24px" fontWeight={600}>
                         $
                         {fiatValueOfFees?.greaterThan(new Fraction(1, 100))
-                          ? fiatValueOfFees.toFixed(2, { groupSeparator: ',' })
+                          ? fiatValueOfFees.toFixed(2, {
+                              groupSeparator: ',',
+                            })
                           : '-'}
                       </Text>
 
@@ -807,24 +791,25 @@ export default function PoolPage() {
                     tickAtLimit={tickAtLimit}
                   />
                 </Box>
-
-                <MerklSection
-                  disabled={!isOwnNFT}
-                  outRange={!inRange}
-                  isStakedInMCv3={Boolean(isStakedInMCv3)}
-                  notEnoughLiquidity={Boolean(
-                    fiatValueOfLiquidity
-                      ? fiatValueOfLiquidity.lessThan(
-                          // NOTE: if Liquidity is lessage 20$, can't participate in Merkl
-                          new Fraction(
-                            BigInt(20) * fiatValueOfLiquidity.decimalScale * fiatValueOfLiquidity.denominator,
-                            fiatValueOfLiquidity?.denominator,
-                          ),
-                        )
-                      : false,
-                  )}
-                  poolAddress={poolAddress}
-                />
+                <Flex ml={['0px', '0px', '16px', '16px']} mt="24px">
+                  <MerklSection
+                    disabled={!isOwnNFT}
+                    outRange={!inRange}
+                    notEnoughLiquidity={Boolean(
+                      fiatValueOfLiquidity
+                        ? fiatValueOfLiquidity.lessThan(
+                            // NOTE: if Liquidity is lessage 20$, can't participate in Merkl
+                            new Fraction(
+                              BigInt(20) * fiatValueOfLiquidity.decimalScale * fiatValueOfLiquidity.denominator,
+                              fiatValueOfLiquidity?.denominator,
+                            ),
+                          )
+                        : false,
+                    )}
+                    poolAddress={poolAddress}
+                    chainId={pool?.chainId}
+                  />
+                </Flex>
               </Flex>
               {positionDetails && currency0 && currency1 && (
                 <PositionHistory
@@ -835,15 +820,15 @@ export default function PoolPage() {
               )}
             </CardBody>
           </>
-        )}
-      </BodyWrapper>
-      <V3SubgraphHealthIndicator />
-    </Page>
+        </BodyWrapper>
+      )}
+    </Box>
   )
 }
 
 PoolPage.chains = CHAIN_IDS
 PoolPage.screen = true
+PoolPage.Layout = PageWithoutFAQ
 
 type PositionTX = {
   id: string
@@ -1182,8 +1167,8 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   if (tokenId && !(tokenId as string)?.match(isNumberReg)) {
     return {
       redirect: {
-        statusCode: 303,
-        destination: `/add`,
+        statusCode: 307,
+        destination: '/add',
       },
     }
   }

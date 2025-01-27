@@ -1,16 +1,18 @@
 import { ChainId } from '@pancakeswap/chains'
-import { createFarmFetcher, SerializedFarm, SerializedFarmsState } from '@pancakeswap/farms'
-import { getFarmConfig } from '@pancakeswap/farms/constants'
+import { createFarmFetcher, getLegacyFarmConfig, SerializedFarm, SerializedFarmsState } from '@pancakeswap/farms'
 import { createAsyncThunk, createSlice, isAnyOf } from '@reduxjs/toolkit'
 import type {
   UnknownAsyncThunkFulfilledAction,
   UnknownAsyncThunkPendingAction,
   UnknownAsyncThunkRejectedAction,
 } from '@reduxjs/toolkit/dist/matchers'
+import BigNumber from 'bignumber.js'
 import { getFarmsPriceHelperLpFiles } from 'config/constants/priceHelperLps'
 import stringify from 'fast-json-stable-stringify'
 import keyBy from 'lodash/keyBy'
+import { fetchStableFarmsAvgInfo, fetchV2FarmsAvgInfo } from 'queries/farms'
 import type { AppState } from 'state'
+import { chainIdToExplorerInfoChainName, explorerApiClient } from 'state/info/api/client'
 import { verifyBscNetwork } from 'utils/verifyBscNetwork'
 import { getViemClients } from 'utils/viem'
 import { chains } from 'utils/wagmi'
@@ -34,8 +36,8 @@ const fetchFarmPublicDataPkg = async ({
   pids,
   chainId,
   chain,
-}): Promise<[SerializedFarm[], number, number, string]> => {
-  const farmsConfig = await getFarmConfig(chainId)
+}): Promise<[SerializedFarm[], number, number, string, Record<string, number>]> => {
+  const farmsConfig = await getLegacyFarmConfig(chainId)
   const farmsCanFetch = farmsConfig?.filter((farmConfig) => pids.includes(farmConfig.pid)) ?? []
   const priceHelperLpsConfig = getFarmsPriceHelperLpFiles(chainId)
 
@@ -44,7 +46,55 @@ const fetchFarmPublicDataPkg = async ({
     isTestnet: chain.testnet,
     farms: farmsCanFetch.concat(priceHelperLpsConfig),
   })
-  return [farmsWithPrice, poolLength, regularCakePerBlock, totalRegularAllocPoint]
+
+  const farmsWithPriceWithFallback = await Promise.all(
+    farmsWithPrice.map(async (farm) => {
+      const tokenPriceVsQuoteBn = new BigNumber(farm.tokenPriceVsQuote)
+      if (tokenPriceVsQuoteBn.gt(0)) {
+        const quoteTokenPriceStable = new BigNumber(farm.quoteTokenPriceBusd)
+        if (quoteTokenPriceStable.eq(0)) {
+          try {
+            const data = await explorerApiClient
+              .GET('/cached/tokens/{chainName}/{address}/price', {
+                signal: null,
+                params: {
+                  path: {
+                    address: farm.quoteToken.address,
+                    chainName: chainIdToExplorerInfoChainName[chainId],
+                  },
+                },
+              })
+              .then((resp) => resp.data)
+            if (data) {
+              // eslint-disable-next-line no-param-reassign
+              farm.quoteTokenPriceBusd = data.priceUSD
+            }
+          } catch (error) {
+            console.error('Get price from api', error)
+          }
+        }
+      }
+      return farm
+    }),
+  )
+
+  const farmAprs: Record<string, number> = {}
+  try {
+    const [farmsV2AvgInfo, farmsStableAvgInfo] = await Promise.all([
+      fetchV2FarmsAvgInfo(chainId),
+      fetchStableFarmsAvgInfo(chainId),
+    ])
+
+    const mergedFarmsAvgInfo = { ...farmsV2AvgInfo, ...farmsStableAvgInfo }
+
+    Object.keys(mergedFarmsAvgInfo).forEach((key) => {
+      const tokenData = mergedFarmsAvgInfo[key]
+      farmAprs[key] = parseFloat(tokenData.apr7d.multipliedBy(100).toFixed(2))
+    })
+  } catch (e) {
+    console.error(e)
+  }
+  return [farmsWithPriceWithFallback, poolLength, regularCakePerBlock, totalRegularAllocPoint, farmAprs]
 }
 
 export const farmFetcher = createFarmFetcher(getViemClients)
@@ -67,7 +117,7 @@ export const fetchInitialFarmsData = createAsyncThunk<
     state: AppState
   }
 >('farms/fetchInitialFarmsData', async ({ chainId }) => {
-  return getFarmConfig(chainId).then((farmDataList) => {
+  return getLegacyFarmConfig(chainId).then((farmDataList) => {
     return {
       data:
         farmDataList?.map((farm) => ({
@@ -85,7 +135,7 @@ export const fetchInitialFarmsData = createAsyncThunk<
 })
 
 export const fetchFarmsPublicDataAsync = createAsyncThunk<
-  [SerializedFarm[], number, number, string],
+  [SerializedFarm[], number, number, string, Record<string, number>],
   { pids: number[]; chainId: number },
   {
     state: AppState
@@ -216,10 +266,11 @@ async function getBCakeWrapperFarmsStakeValue(farms, account, chainId) {
 }
 
 async function getBCakeWrapperFarmsData(farms, chainId) {
-  const [{ boosterContractAddress, startTimestamp, endTimestamp }, { rewardPerSec }] = await Promise.all([
-    fetchFarmUserBCakeWrapperConstants(farms, chainId),
-    fetchFarmUserBCakeWrapperRewardPerSec(farms, chainId),
-  ])
+  const [{ boosterContractAddress, startTimestamp, endTimestamp, totalLiquidityX }, { rewardPerSec }] =
+    await Promise.all([
+      fetchFarmUserBCakeWrapperConstants(farms, chainId),
+      fetchFarmUserBCakeWrapperRewardPerSec(farms, chainId),
+    ])
 
   const normalFarmAllowances = farms.map((_, index) => {
     return {
@@ -228,6 +279,7 @@ async function getBCakeWrapperFarmsData(farms, chainId) {
       rewardPerSecond: rewardPerSec[index],
       startTimestamp: startTimestamp[index],
       endTimestamp: endTimestamp[index],
+      totalLiquidityX: totalLiquidityX[index],
     }
   })
 
@@ -269,7 +321,7 @@ export const fetchFarmUserDataAsync = createAsyncThunk<
       await dispatch(fetchInitialFarmsData({ chainId }))
     }
     const poolLength = state.farms.poolLength ?? (await fetchMasterChefFarmPoolLength(ChainId.BSC))
-    const farmsConfig = await getFarmConfig(chainId)
+    const farmsConfig = await getLegacyFarmConfig(chainId)
     const farmsCanFetch =
       farmsConfig?.filter((farmConfig) => pids.includes(farmConfig.pid) && poolLength > farmConfig.pid) ?? []
     if (proxyAddress && farmsCanFetch?.length && verifyBscNetwork(chainId)) {
@@ -312,7 +364,7 @@ export const fetchBCakeWrapperUserDataAsync = createAsyncThunk<
     if (state.farms.chainId !== chainId) {
       await dispatch(fetchInitialFarmsData({ chainId }))
     }
-    const farmsConfig = await getFarmConfig(chainId)
+    const farmsConfig = await getLegacyFarmConfig(chainId)
     const farmsCanFetch = farmsConfig?.filter((farmConfig) => pids.includes(farmConfig.pid)) ?? []
     if (farmsCanFetch?.length) {
       const normalAllowances = await getBCakeWrapperFarmsStakeValue(farmsCanFetch, account, chainId)
@@ -346,7 +398,7 @@ export const fetchBCakeWrapperDataAsync = createAsyncThunk<
     if (state.farms.chainId !== chainId) {
       await dispatch(fetchInitialFarmsData({ chainId }))
     }
-    const farmsConfig = await getFarmConfig(chainId)
+    const farmsConfig = await getLegacyFarmConfig(chainId)
     const farmsCanFetch = farmsConfig?.filter((farmConfig) => pids.includes(farmConfig.pid)) ?? []
     if (farmsCanFetch?.length) {
       const normalAllowances = await getBCakeWrapperFarmsData(farmsCanFetch, chainId)
@@ -419,12 +471,16 @@ export const farmsSlice = createSlice({
 
     // Update farms with live data
     builder.addCase(fetchFarmsPublicDataAsync.fulfilled, (state, action) => {
-      const [farmPayload, poolLength, regularCakePerBlock, totalRegularAllocPoint] = action.payload
+      const [farmPayload, poolLength, regularCakePerBlock, totalRegularAllocPoint, farmAprs] = action.payload
       const farmPayloadPidMap = keyBy(farmPayload, 'pid')
 
       state.data = state.data.map((farm) => {
         const liveFarmData = farmPayloadPidMap[farm.pid]
-        return { ...farm, ...liveFarmData }
+        return {
+          ...farm,
+          ...liveFarmData,
+          ...(farmAprs[farm.lpAddress.toLowerCase()] && { lpRewardsApr: farmAprs[farm.lpAddress.toLowerCase()] }),
+        }
       })
       state.poolLength = poolLength
       state.regularCakePerBlock = regularCakePerBlock

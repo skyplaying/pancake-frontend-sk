@@ -14,9 +14,11 @@ import {
   PencilIcon,
   Slider,
   Text,
+  TooltipText,
   useMatchBreakpoints,
   useModal,
   useToast,
+  useTooltip,
 } from '@pancakeswap/uikit'
 import { useUserSlippage } from '@pancakeswap/utils/user'
 import { CommitButton } from 'components/CommitButton'
@@ -43,7 +45,10 @@ import { SettingsMode } from 'components/Menu/GlobalSettings/types'
 import { CommonBasesType } from 'components/SearchModal/types'
 import { Field } from 'state/burn/actions'
 import { useRemoveLiquidityV2FormState } from 'state/burn/reducer'
+import { useLPApr } from 'state/swap/useLPApr'
 import { useGasPrice } from 'state/user/hooks'
+import { logGTMClickRemoveLiquidityEvent } from 'utils/customGTMEventTracking'
+import { formatAmount } from 'utils/formatInfoNumbers'
 import { isUserRejected, logError } from 'utils/sentry'
 import { RemoveLiquidityLayout } from '..'
 import ConnectWalletButton from '../../../components/ConnectWalletButton'
@@ -83,6 +88,13 @@ export default function RemoveStableLiquidity({ currencyA, currencyB, currencyId
 
   const { pair, parsedAmounts, error } = useStableDerivedBurnInfo(currencyA ?? undefined, currencyB ?? undefined)
 
+  const poolData = useLPApr('stable', pair)
+  const { targetRef, tooltip, tooltipVisible } = useTooltip(
+    t(`Based on last 24 hours' performance. Does not account for impermanent loss`),
+    {
+      placement: 'bottom',
+    },
+  )
   const { onUserInput: _onUserInput } = useBurnActionHandlers()
   const isValid = !error
 
@@ -536,6 +548,17 @@ export default function RemoveStableLiquidity({ currencyA, currencyB, currencyId
             {allowedSlippage / 100}%
           </Text>
         </RowBetween>
+        {poolData && (
+          <RowBetween mt="16px">
+            <TooltipText ref={targetRef} bold fontSize="12px" color="secondary">
+              {t('LP reward APR')}
+            </TooltipText>
+            {tooltipVisible && tooltip}
+            <Text bold color="primary">
+              {formatAmount(poolData.lpApr)}%
+            </Text>
+          </RowBetween>
+        )}
 
         <Box position="relative" mt="16px">
           {!account ? (
@@ -572,6 +595,7 @@ export default function RemoveStableLiquidity({ currencyA, currencyB, currencyId
                     txHash: undefined,
                   })
                   onPresentRemoveLiquidity()
+                  logGTMClickRemoveLiquidityEvent()
                 }}
                 width="100%"
                 disabled={!isValid || approvalState !== ApprovalState.APPROVED}

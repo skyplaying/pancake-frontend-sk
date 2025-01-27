@@ -1,5 +1,119 @@
 # @pancakeswap/gauges
 
+## 2.0.4
+
+### Patch Changes
+
+- e02271e: Updated new GAUGES_CALC_ADDRESS
+
+## 2.0.3
+
+### Patch Changes
+
+- b529b61: Update mainnet gauges contract address
+  - @pancakeswap/tokens@0.6.29
+  - @pancakeswap/v3-sdk@3.8.13
+
+## 2.0.2
+
+### Patch Changes
+
+- @pancakeswap/v3-sdk@3.8.12
+- @pancakeswap/tokens@0.6.28
+
+## 2.0.1
+
+### Patch Changes
+
+- bab8589: Fix unable to get pair combination when failed to get gauge list
+- 447ceb3: Fix missing gauge
+
+## 2.0.0
+
+### Major Changes
+
+- 3e83a9c: Read gauge list from remote endpoint
+
+## 1.2.17
+
+### Patch Changes
+
+- Updated dependencies [8218dbf]
+  - @pancakeswap/tokens@0.6.27
+
+## 1.2.16
+
+### Patch Changes
+
+- 72fb1db: Listed new tokens & farms & gauges config
+- Updated dependencies [72fb1db]
+  - @pancakeswap/tokens@0.6.26
+
+## 1.2.15
+
+### Patch Changes
+
+- 6d4ecf0: List farm, pool, gauges
+- Updated dependencies [6d4ecf0]
+  - @pancakeswap/tokens@0.6.25
+
+## 1.2.14
+
+### Patch Changes
+
+- Updated dependencies [103dd63]
+- Updated dependencies [c6e9e02]
+  - @pancakeswap/tokens@0.6.24
+
+## 1.2.13
+
+### Patch Changes
+
+- @pancakeswap/v3-sdk@3.8.11
+- @pancakeswap/tokens@0.6.23
+
+## 1.2.12
+
+### Patch Changes
+
+- Updated dependencies [911d107]
+  - @pancakeswap/v3-sdk@3.8.10
+
+## 1.2.11
+
+### Patch Changes
+
+- Updated dependencies [fe96bb1]
+  - @pancakeswap/v3-sdk@3.8.9
+
+## 1.2.10
+
+### Patch Changes
+
+- Updated dependencies [4628ab7]
+- Updated dependencies [8f573cf]
+  - @pancakeswap/tokens@0.6.22
+
+## 1.2.9
+
+### Patch Changes
+
+- Updated dependencies [9a16780]
+  - @pancakeswap/chains@0.4.6
+  - @pancakeswap/tokens@0.6.21
+  - @pancakeswap/v3-sdk@3.8.8
+
+## 1.2.8
+
+### Patch Changes
+
+- Updated dependencies [b9c91d1]
+- Updated dependencies [5fa28e0]
+- Updated dependencies [95cfa0c]
+  - @pancakeswap/chains@0.4.5
+  - @pancakeswap/tokens@0.6.20
+  - @pancakeswap/v3-sdk@3.8.7
+
 ## 1.2.7
 
 ### Patch Changes

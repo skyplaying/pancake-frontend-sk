@@ -1,13 +1,13 @@
 import { ChainId } from '@pancakeswap/chains'
 import { getChainId } from 'config/chains'
-import { atom, useAtomValue } from 'jotai'
+import { atom, useAtom, useAtomValue } from 'jotai'
 import { useRouter } from 'next/router'
-import { useDeferredValue, useMemo } from 'react'
+import { useDeferredValue, useEffect, useMemo } from 'react'
 import { isChainSupported } from 'utils/wagmi'
 import { useAccount } from 'wagmi'
-import { useSessionChainId } from './useSessionChainId'
+// import { useSessionChainId } from './useSessionChainId'
 
-const queryChainIdAtom = atom(-1) // -1 unload, 0 no chainId on query
+export const queryChainIdAtom = atom(-1) // -1 unload, 0 no chainId on query
 
 queryChainIdAtom.onMount = (set) => {
   const params = new URL(window.location.href).searchParams
@@ -28,13 +28,15 @@ queryChainIdAtom.onMount = (set) => {
 }
 
 export function useLocalNetworkChain() {
-  const [sessionChainId] = useSessionChainId()
-  // useRouter is kind of slow, we only get this query chainId once
-  const queryChainId = useAtomValue(queryChainIdAtom)
-
+  const [queryChainId, setQueryChainId] = useAtom(queryChainIdAtom)
   const { query } = useRouter()
+  const chainId = +(getChainId(query.chain as string) || queryChainId)
 
-  const chainId = +(sessionChainId || getChainId(query.chain as string) || queryChainId)
+  useEffect(() => {
+    if (chainId) {
+      setQueryChainId(chainId)
+    }
+  }, [chainId, setQueryChainId])
 
   if (isChainSupported(chainId)) {
     return chainId

@@ -1,4 +1,3 @@
-import { ChainId } from '@pancakeswap/chains'
 import { useTranslation } from '@pancakeswap/localization'
 import { Token } from '@pancakeswap/sdk'
 import {
@@ -20,8 +19,10 @@ import { SwellTooltip } from 'components/SwellTooltip/SwellTooltip'
 import { TokenPairImage } from 'components/TokenImage'
 import { useHasSwellReward } from 'hooks/useHasSwellReward'
 import { styled } from 'styled-components'
-import { Address, isAddressEqual } from 'viem'
+import { isAddressEqual } from 'utils'
+import { Address } from 'viem'
 import { bsc } from 'viem/chains'
+import { useHasCustomFarmLpTooltips } from 'views/Farms/hooks/useHasCustomFarmLpTooltips'
 import { useChainId } from 'wagmi'
 import BoostedTag from '../YieldBooster/components/BoostedTag'
 
@@ -42,6 +43,7 @@ type ExpandableSectionProps = {
   farmCakePerSecond?: string
   totalMultipliers?: string
   merklLink?: string
+  merklUserLink?: string
   hasBothFarmAndMerkl?: boolean
   isBoosted?: boolean
   lpAddress?: Address
@@ -72,6 +74,7 @@ const CardHeading: React.FC<React.PropsWithChildren<ExpandableSectionProps>> = (
   farmCakePerSecond,
   totalMultipliers,
   merklLink,
+  merklUserLink,
   hasBothFarmAndMerkl,
   merklApr,
   lpAddress,
@@ -82,6 +85,8 @@ const CardHeading: React.FC<React.PropsWithChildren<ExpandableSectionProps>> = (
   const chainId = useChainId()
   const isReady = multiplier !== undefined || bCakeWrapperAddress
   const hasSwellReward = useHasSwellReward(lpAddress)
+  const customTooltips = useHasCustomFarmLpTooltips(lpAddress)
+
   const multiplierTooltipContent = FarmMultiplierInfo({
     farmCakePerSecond: farmCakePerSecond ?? '-',
     totalMultipliers: totalMultipliers ?? '-',
@@ -110,6 +115,7 @@ const CardHeading: React.FC<React.PropsWithChildren<ExpandableSectionProps>> = (
                   merklLink={merklLink}
                   hasFarm={hasBothFarmAndMerkl}
                   merklApr={merklApr}
+                  merklUserLink={merklUserLink}
                 />
               </Box>
             ) : null}
@@ -121,13 +127,7 @@ const CardHeading: React.FC<React.PropsWithChildren<ExpandableSectionProps>> = (
                 <Box>
                   <Text lineHeight="110%" as="span">
                     {t('Stake CAKE, Earn PEPE in our')}
-                    <Link
-                      ml="4px"
-                      lineHeight="110%"
-                      display="inline !important"
-                      href="/pools?chain=bsc"
-                      target="_blank"
-                    >
+                    <Link ml="4px" lineHeight="110%" display="inline !important" href="/pools?chain=bsc" external>
                       PEPE Syrup Pool
                     </Link>
                   </Text>
@@ -147,6 +147,7 @@ const CardHeading: React.FC<React.PropsWithChildren<ExpandableSectionProps>> = (
         )}
         <AutoRow gap="4px" justifyContent="flex-end">
           {hasSwellReward && <SwellTooltip />}
+          {customTooltips && customTooltips.tooltips}
           {isReady && isStable ? <StableFarmTag /> : version === 2 ? <V2Tag /> : null}
           {isReady && version === 3 && <V3FeeTag feeAmount={feeAmount} />}
           {isReady && isCommunityFarm && <FarmAuctionTag mr="-4px" />}
@@ -160,7 +161,7 @@ const CardHeading: React.FC<React.PropsWithChildren<ExpandableSectionProps>> = (
           ) : (
             <Skeleton ml="4px" width={42} height={28} />
           )}
-          {isReady && isBooster && chainId === ChainId.BSC && <BoostedTag mr="-4px" />}
+          {isReady && isBooster && <BoostedTag mr="-4px" />}
         </AutoRow>
       </Flex>
     </Wrapper>

@@ -1,10 +1,10 @@
 import { Currency, CurrencyAmount, Token } from '@pancakeswap/aptos-swap-sdk'
-import { APTOS_COIN, useAccount, useAccountBalance } from '@pancakeswap/awgmi'
+import { APTOS_COIN, useAccount, useBalance } from '@pancakeswap/awgmi'
 import { useTranslation } from '@pancakeswap/localization'
 import { CircleLoader, Column, QuestionHelper, RowBetween, RowFixed, Text } from '@pancakeswap/uikit'
 import { LightGreyCard } from 'components/Card'
 import useNativeCurrency from 'hooks/useNativeCurrency'
-import React, { CSSProperties, MutableRefObject, ReactNode, useCallback, useMemo } from 'react'
+import { CSSProperties, MutableRefObject, ReactNode, useCallback, useMemo } from 'react'
 import { FixedSizeList } from 'react-window'
 import { styled } from 'styled-components'
 import { useIsUserAddedToken } from '../../hooks/Tokens'
@@ -71,7 +71,7 @@ function CurrencyRow({
   const selectedTokenList = useCombinedActiveList()
   const isOnSelectedList = isTokenOnList(selectedTokenList, currency)
   const customAdded = useIsUserAddedToken(currency)
-  const { data: balance, isLoading } = useAccountBalance({
+  const { data: balance, isLoading } = useBalance({
     address: account,
     coin: key,
     watch: true,

@@ -1,12 +1,11 @@
-/* eslint-disable react/no-array-index-key */
 import debounce from "lodash/debounce";
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { usePopper } from "react-popper";
 import useMatchBreakpoints from "../../contexts/MatchBreakpoints/useMatchBreakpoints";
 import { useOnClickOutside } from "../../hooks";
 import { MenuContext } from "../../widgets/Menu/context";
 import { Box, Flex } from "../Box";
-import { LogoutIcon } from "../Svg";
+import { ChevronDownIcon, ChevronUpIcon, OpenNewIcon } from "../Svg";
 import {
   DropdownMenuDivider,
   DropdownMenuItem,
@@ -14,13 +13,154 @@ import {
   StyledDropdownMenu,
   StyledDropdownMenuItemContainer,
 } from "./styles";
-import { DropdownMenuItemType, DropdownMenuProps } from "./types";
+import { DropdownMenuItems, DropdownMenuItemType, DropdownMenuProps, LinkStatus as LinkStatusType } from "./types";
+
+const MenuItemComponent: React.FC<{
+  label: React.ReactNode;
+  status: LinkStatusType | undefined;
+  isChildItems: boolean | undefined;
+}> = ({ label, status, isChildItems }) => {
+  return (
+    <Flex alignItems="center" ml={isChildItems ? "16px" : "0px"}>
+      {label}
+      {status && (
+        <LinkStatus textTransform="uppercase" color={status.color} fontSize="14px">
+          {status.text}
+        </LinkStatus>
+      )}
+    </Flex>
+  );
+};
+
+const MenuItem: React.FC<{
+  item: DropdownMenuItems;
+  activeItem?: string;
+  activeSubItemChildItem?: string;
+  isChildItems?: boolean;
+  isDisabled?: boolean;
+  linkComponent: any;
+  setIsOpen: (open: boolean) => void;
+}> = ({ item, isChildItems, isDisabled, linkComponent, activeItem, activeSubItemChildItem, setIsOpen }) => {
+  const [isSubMenuOpen, setIsSubMenuOpen] = useState(true);
+  const { isMobile, isMd } = useMatchBreakpoints();
+  const { type = DropdownMenuItemType.INTERNAL_LINK, label, href = "/", status, disabled, items, ...itemProps } = item;
+  const hasChildItems = useMemo(() => Boolean(items && items.length > 0), [items]);
+
+  const isActive = useMemo(() => {
+    return Boolean(isChildItems ? item.href === activeSubItemChildItem : item.href === activeItem);
+  }, [item, isChildItems, activeSubItemChildItem, activeItem]);
+
+  const MenuItemContent = <MenuItemComponent label={label} status={status} isChildItems={isChildItems} />;
+
+  const handleToggleSubMenu = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.stopPropagation();
+      e.preventDefault();
+      setIsSubMenuOpen(!isSubMenuOpen);
+    },
+    [isSubMenuOpen]
+  );
+
+  const chevronIconColor = useMemo(() => {
+    const isActiveChevron = hasChildItems && item.items?.find((i) => i.href === activeSubItemChildItem);
+    if (isActiveChevron) {
+      return "secondary";
+    }
+
+    return disabled || isDisabled ? "disabled" : "textSubtle";
+  }, [activeSubItemChildItem, disabled, hasChildItems, isDisabled, item]);
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (hasChildItems) {
+        handleToggleSubMenu(e);
+      } else {
+        setIsOpen(false);
+        itemProps?.onClick?.(e);
+      }
+    },
+    [hasChildItems, handleToggleSubMenu, setIsOpen, itemProps?.onClick]
+  );
+
+  const handleExternalClick = useCallback(
+    (e: any) => {
+      setIsOpen(false);
+      itemProps?.onClick?.(e);
+    },
+    [setIsOpen, itemProps?.onClick]
+  );
+
+  return (
+    <StyledDropdownMenuItemContainer>
+      {type === DropdownMenuItemType.BUTTON && (
+        <DropdownMenuItem $isActive={isActive} disabled={disabled || isDisabled} type="button" {...itemProps}>
+          {MenuItemContent}
+        </DropdownMenuItem>
+      )}
+      {type === DropdownMenuItemType.INTERNAL_LINK && (
+        <DropdownMenuItem
+          disabled={disabled || isDisabled}
+          as={linkComponent}
+          href={href}
+          {...itemProps}
+          $isActive={isActive}
+          onClick={handleClick}
+        >
+          {MenuItemContent}
+          {hasChildItems && (
+            <>
+              {isSubMenuOpen ? (
+                <ChevronDownIcon width="24px" height="24px" color={chevronIconColor} />
+              ) : (
+                <ChevronUpIcon width="24px" height="24px" color={chevronIconColor} />
+              )}
+            </>
+          )}
+        </DropdownMenuItem>
+      )}
+      {type === DropdownMenuItemType.EXTERNAL_LINK && (
+        <DropdownMenuItem
+          $isActive={isActive}
+          disabled={disabled || isDisabled}
+          as="a"
+          href={href}
+          target="_blank"
+          onClick={handleExternalClick}
+        >
+          <Flex alignItems="center" justifyContent="space-between" width="100%">
+            {MenuItemContent}
+            <OpenNewIcon color={disabled ? "textDisabled" : "textSubtle"} />
+          </Flex>
+        </DropdownMenuItem>
+      )}
+
+      {type === DropdownMenuItemType.DIVIDER && <DropdownMenuDivider />}
+
+      {isSubMenuOpen &&
+        hasChildItems &&
+        items
+          ?.filter((childItem) => ((isMobile || isMd) && childItem.isMobileOnly) || !childItem.isMobileOnly)
+          ?.map((childItem, index) => (
+            <MenuItem
+              isChildItems
+              key={childItem?.label?.toString() || `delimiter${index}`}
+              item={childItem}
+              isDisabled={isDisabled}
+              linkComponent={linkComponent}
+              activeSubItemChildItem={activeSubItemChildItem}
+              setIsOpen={setIsOpen}
+            />
+          ))}
+    </StyledDropdownMenuItemContainer>
+  );
+};
 
 const DropdownMenu: React.FC<React.PropsWithChildren<DropdownMenuProps>> = ({
   children,
   isBottomNav = false,
   showItemsOnMobile = false,
   activeItem = "",
+  activeSubItemChildItem = "",
   items = [],
   index,
   setMenuOpenByIndex,
@@ -54,7 +194,6 @@ const DropdownMenu: React.FC<React.PropsWithChildren<DropdownMenuProps>> = ({
       isBottomNav ? 100 : 10
     );
 
-    // added this to remove the ugly 4 lines
     [targetRef, tooltipRef].forEach((ref) => {
       ref?.addEventListener("mouseenter", showDropdownMenu);
       ref?.addEventListener("mouseleave", hideDropdownMenu);
@@ -82,92 +221,34 @@ const DropdownMenu: React.FC<React.PropsWithChildren<DropdownMenuProps>> = ({
     }, [setIsOpen])
   );
 
+  const handlePointerDown = useCallback(() => {
+    setIsOpen((s) => !s);
+  }, []);
+
   return (
     <Box ref={setTargetRef} {...props}>
-      <Box
-        onPointerDown={() => {
-          setIsOpen((s) => !s);
-        }}
-      >
-        {children}
-      </Box>
+      <Box onPointerDown={handlePointerDown}>{children}</Box>
       {hasItems && (
         <StyledDropdownMenu
-          style={styles.popper}
           ref={setTooltipRef}
-          {...attributes.popper}
+          style={styles.popper}
           $isBottomNav={isBottomNav}
           $isOpen={isMenuShow}
+          {...attributes.popper}
         >
           {items
             .filter((item) => ((isMobile || isMd) && item.isMobileOnly) || !item.isMobileOnly)
-            .map(
-              (
-                { type = DropdownMenuItemType.INTERNAL_LINK, label, href = "/", status, disabled, ...itemProps },
-                itemItem
-              ) => {
-                const MenuItemContent = (
-                  <Flex alignItems="center">
-                    {label}
-                    {status && (
-                      <LinkStatus textTransform="uppercase" color={status.color} fontSize="14px">
-                        {status.text}
-                      </LinkStatus>
-                    )}
-                  </Flex>
-                );
-                const isActive = href === activeItem;
-                return (
-                  <StyledDropdownMenuItemContainer key={itemItem}>
-                    {type === DropdownMenuItemType.BUTTON && (
-                      <DropdownMenuItem
-                        $isActive={isActive}
-                        disabled={disabled || isDisabled}
-                        type="button"
-                        {...itemProps}
-                      >
-                        {MenuItemContent}
-                      </DropdownMenuItem>
-                    )}
-                    {type === DropdownMenuItemType.INTERNAL_LINK && (
-                      <DropdownMenuItem
-                        $isActive={isActive}
-                        disabled={disabled || isDisabled}
-                        as={linkComponent}
-                        href={href}
-                        {...itemProps}
-                        onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                          setIsOpen(false);
-                          itemProps.onClick?.(e);
-                        }}
-                      >
-                        {MenuItemContent}
-                      </DropdownMenuItem>
-                    )}
-                    {type === DropdownMenuItemType.EXTERNAL_LINK && (
-                      <DropdownMenuItem
-                        $isActive={isActive}
-                        disabled={disabled || isDisabled}
-                        as="a"
-                        href={href}
-                        target="_blank"
-                        {...itemProps}
-                        onClick={(e: any) => {
-                          setIsOpen(false);
-                          itemProps.onClick?.(e);
-                        }}
-                      >
-                        <Flex alignItems="center" justifyContent="space-between" width="100%">
-                          {MenuItemContent}
-                          <LogoutIcon color={disabled ? "textDisabled" : "textSubtle"} />
-                        </Flex>
-                      </DropdownMenuItem>
-                    )}
-                    {type === DropdownMenuItemType.DIVIDER && <DropdownMenuDivider />}
-                  </StyledDropdownMenuItemContainer>
-                );
-              }
-            )}
+            .map((item) => (
+              <MenuItem
+                key={item?.label?.toString() || `delimiter${index}`}
+                item={item}
+                activeItem={activeItem}
+                activeSubItemChildItem={activeSubItemChildItem}
+                isDisabled={isDisabled}
+                linkComponent={linkComponent}
+                setIsOpen={setIsOpen}
+              />
+            ))}
         </StyledDropdownMenu>
       )}
     </Box>

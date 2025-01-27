@@ -3,9 +3,7 @@ import { DeserializedFarm, FarmWithStakedValue, filterFarmsByQuery } from '@panc
 import { useIntersectionObserver } from '@pancakeswap/hooks'
 import { useTranslation } from '@pancakeswap/localization'
 import {
-  ArrowForwardIcon,
   Box,
-  Button,
   Flex,
   FlexLayout,
   Heading,
@@ -21,7 +19,7 @@ import {
   ToggleView,
 } from '@pancakeswap/uikit'
 
-import { FarmWidget, NextLinkFromReactRouter } from '@pancakeswap/widgets-internal'
+import { FarmWidget } from '@pancakeswap/widgets-internal'
 import BigNumber from 'bignumber.js'
 import Page from 'components/Layout/Page'
 import { useActiveChainId } from 'hooks/useActiveChainId'
@@ -189,7 +187,7 @@ const Farms: React.FC<React.PropsWithChildren> = ({ children }) => {
   // Connected users should see loading indicator until first userData has loaded
   const userDataReady = !account || (!!account && userDataLoaded)
 
-  const [stakedOnly, setStakedOnly] = useUserFarmStakedOnly(isActive)
+  const [stakedOnly, , toggleStakedOnly] = useUserFarmStakedOnly(isActive)
   const [boostedOnly, setBoostedOnly] = useState(false)
   const [stableSwapOnly, setStableSwapOnly] = useState(false)
   const [farmTypesEnableCount, setFarmTypesEnableCount] = useState(0)
@@ -240,6 +238,7 @@ const Farms: React.FC<React.PropsWithChildren> = ({ children }) => {
                 totalLiquidity,
                 farm.lpAddress,
                 regularCakePerBlock,
+                farm.lpRewardsApr,
               )
             : { cakeRewardsApr: 0, lpRewardsApr: 0 }
 
@@ -360,14 +359,6 @@ const Farms: React.FC<React.PropsWithChildren> = ({ children }) => {
               <FarmH2 scale="lg" color="text">
                 {t('Stake LP tokens to earn.')}
               </FarmH2>
-              <NextLinkFromReactRouter to="/farms/auction" prefetch={false}>
-                <Button p="0" variant="text">
-                  <Text color="primary" bold fontSize="16px" mr="4px">
-                    {t('Community Auctions')}
-                  </Text>
-                  <ArrowForwardIcon color="primary" />
-                </Button>
-              </NextLinkFromReactRouter>
             </Box>
             {chainId === ChainId.BSC && (
               <Box>
@@ -394,12 +385,7 @@ const Farms: React.FC<React.PropsWithChildren> = ({ children }) => {
                 handleSetFarmTypesEnableCount={setFarmTypesEnableCount}
               />
               <ToggleWrapper>
-                <Toggle
-                  id="staked-only-farms"
-                  checked={stakedOnly}
-                  onChange={() => setStakedOnly(!stakedOnly)}
-                  scale="sm"
-                />
+                <Toggle id="staked-only-farms" checked={stakedOnly} onChange={toggleStakedOnly} scale="sm" />
                 <Text> {t('Staked only')}</Text>
               </ToggleWrapper>
             </Flex>

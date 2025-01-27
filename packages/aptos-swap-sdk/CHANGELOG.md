@@ -1,5 +1,26 @@
 # @pancakeswap/aptos-swap-sdk
 
+## 1.0.7
+
+### Patch Changes
+
+- 36f8955: Update packages
+
+## 1.0.6
+
+### Patch Changes
+
+- Updated dependencies [176eb10]
+- Updated dependencies [176eb10]
+  - @pancakeswap/swap-sdk-core@1.3.0
+
+## 1.0.5
+
+### Patch Changes
+
+- Updated dependencies [f551e5e]
+  - @pancakeswap/swap-sdk-core@1.2.0
+
 ## 1.0.4
 
 ### Patch Changes

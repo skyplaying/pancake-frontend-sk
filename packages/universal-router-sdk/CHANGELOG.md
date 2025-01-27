@@ -1,5 +1,144 @@
 # @pancakeswap/universal-router-sdk
 
+## 1.0.42
+
+### Patch Changes
+
+- Updated dependencies [8578d8f]
+  - @pancakeswap/smart-router@7.0.2
+
+## 1.0.41
+
+### Patch Changes
+
+- Updated dependencies [4181a79]
+  - @pancakeswap/smart-router@7.0.1
+
+## 1.0.40
+
+### Patch Changes
+
+- Updated dependencies [36f8955]
+  - @pancakeswap/smart-router@7.0.0
+  - @pancakeswap/sdk@5.8.10
+  - @pancakeswap/permit2-sdk@1.0.12
+  - @pancakeswap/v3-sdk@3.8.13
+
+## 1.0.39
+
+### Patch Changes
+
+- @pancakeswap/smart-router@6.2.1
+
+## 1.0.38
+
+### Patch Changes
+
+- Updated dependencies [176eb10]
+- Updated dependencies [176eb10]
+  - @pancakeswap/smart-router@6.2.0
+  - @pancakeswap/sdk@5.8.9
+  - @pancakeswap/v3-sdk@3.8.12
+  - @pancakeswap/permit2-sdk@1.0.11
+
+## 1.0.37
+
+### Patch Changes
+
+- @pancakeswap/smart-router@6.1.6
+
+## 1.0.36
+
+### Patch Changes
+
+- Updated dependencies [3e83a9c]
+  - @pancakeswap/smart-router@6.1.5
+
+## 1.0.35
+
+### Patch Changes
+
+- @pancakeswap/smart-router@6.1.4
+
+## 1.0.34
+
+### Patch Changes
+
+- @pancakeswap/smart-router@6.1.3
+
+## 1.0.33
+
+### Patch Changes
+
+- @pancakeswap/smart-router@6.1.2
+
+## 1.0.32
+
+### Patch Changes
+
+- Updated dependencies [618ad06]
+  - @pancakeswap/smart-router@6.1.1
+
+## 1.0.31
+
+### Patch Changes
+
+- Updated dependencies [b1d1eaf]
+  - @pancakeswap/smart-router@6.1.0
+
+## 1.0.30
+
+### Patch Changes
+
+- @pancakeswap/smart-router@6.0.17
+- @pancakeswap/sdk@5.8.8
+- @pancakeswap/v3-sdk@3.8.11
+- @pancakeswap/permit2-sdk@1.0.10
+
+## 1.0.29
+
+### Patch Changes
+
+- Updated dependencies [911d107]
+  - @pancakeswap/v3-sdk@3.8.10
+  - @pancakeswap/smart-router@6.0.16
+
+## 1.0.28
+
+### Patch Changes
+
+- Updated dependencies [fe96bb1]
+  - @pancakeswap/v3-sdk@3.8.9
+  - @pancakeswap/smart-router@6.0.15
+
+## 1.0.27
+
+### Patch Changes
+
+- @pancakeswap/smart-router@6.0.14
+
+## 1.0.26
+
+### Patch Changes
+
+- Updated dependencies [9a16780]
+  - @pancakeswap/chains@0.4.6
+  - @pancakeswap/permit2-sdk@1.0.9
+  - @pancakeswap/smart-router@6.0.13
+  - @pancakeswap/sdk@5.8.7
+  - @pancakeswap/v3-sdk@3.8.8
+
+## 1.0.25
+
+### Patch Changes
+
+- Updated dependencies [b9c91d1]
+  - @pancakeswap/chains@0.4.5
+  - @pancakeswap/permit2-sdk@1.0.8
+  - @pancakeswap/smart-router@6.0.12
+  - @pancakeswap/sdk@5.8.6
+  - @pancakeswap/v3-sdk@3.8.7
+
 ## 1.0.24
 
 ### Patch Changes

@@ -1,7 +1,7 @@
 import { ChainId } from '@pancakeswap/chains'
 import { useTranslation } from '@pancakeswap/localization'
 import { TradeType } from '@pancakeswap/sdk'
-import { SmartRouter, SmartRouterTrade } from '@pancakeswap/smart-router'
+import { SmartRouter } from '@pancakeswap/smart-router'
 import { formatAmount } from '@pancakeswap/utils/formatFractions'
 import truncateHash from '@pancakeswap/utils/truncateHash'
 import { useUserSlippage } from '@pancakeswap/utils/user'
@@ -14,9 +14,18 @@ import { basisPointsToPercent } from 'utils/exchange'
 import { logSwap, logTx } from 'utils/log'
 import { isUserRejected } from 'utils/sentry'
 import { transactionErrorToUserReadableMessage } from 'utils/transactionErrorToUserReadableMessage'
-import { Address, Hex, TransactionExecutionError, UserRejectedRequestError, hexToBigInt } from 'viem'
+import {
+  Address,
+  Hex,
+  SendTransactionReturnType,
+  TransactionExecutionError,
+  UserRejectedRequestError,
+  hexToBigInt,
+} from 'viem'
 import { useSendTransaction } from 'wagmi'
 
+import { usePaymaster } from 'hooks/usePaymaster'
+import { ClassicOrder } from '@pancakeswap/price-api-sdk'
 import { logger } from 'utils/datadog'
 import { viemClients } from 'utils/viem'
 import { isZero } from '../utils/isZero'
@@ -51,7 +60,7 @@ export class TransactionRejectedError extends Error {}
 export default function useSendSwapTransaction(
   account?: Address,
   chainId?: number,
-  trade?: SmartRouterTrade<TradeType> | null, // trade to execute, required
+  trade?: ClassicOrder['trade'] | null, // trade to execute, required
   swapCalls: SwapCall[] | WallchainSwapCall[] = [],
   type: 'V3SmartSwap' | 'UniversalRouter' = 'V3SmartSwap',
 ) {
@@ -62,6 +71,9 @@ export default function useSendSwapTransaction(
   const [allowedSlippage] = useUserSlippage() || [INITIAL_ALLOWED_SLIPPAGE]
   const { recipient } = useSwapState()
   const recipientAddress = recipient === null ? account : recipient
+
+  // Paymaster for zkSync
+  const { isPaymasterAvailable, isPaymasterTokenActive, sendPaymasterTransaction } = usePaymaster()
 
   return useMemo(() => {
     if (!trade || !sendTransactionAsync || !account || !chainId || !publicClient) {
@@ -139,14 +151,22 @@ export default function useSendSwapTransaction(
               : undefined
         }
 
-        return sendTransactionAsync({
-          account,
-          chainId,
-          to: call.address,
-          data: call.calldata,
-          value: call.value && !isZero(call.value) ? hexToBigInt(call.value) : 0n,
-          gas: call.gas,
-        })
+        let sendTxResult: Promise<SendTransactionReturnType> | undefined
+
+        if (isPaymasterAvailable && isPaymasterTokenActive) {
+          sendTxResult = sendPaymasterTransaction(call, account)
+        } else {
+          sendTxResult = sendTransactionAsync({
+            account,
+            chainId,
+            to: call.address,
+            data: call.calldata,
+            value: call.value && !isZero(call.value) ? hexToBigInt(call.value) : 0n,
+            gas: call.gas,
+          })
+        }
+
+        return sendTxResult
           .then((response) => {
             const inputSymbol = trade.inputAmount.currency.symbol
             const outputSymbol = trade.outputAmount.currency.symbol
@@ -197,6 +217,7 @@ export default function useSendSwapTransaction(
               },
             )
             logSwap({
+              tradeType: trade.tradeType,
               account,
               chainId,
               hash: response,
@@ -231,6 +252,15 @@ export default function useSendSwapTransaction(
                 error,
               )
 
+              if (isPaymasterAvailable && isPaymasterTokenActive) {
+                throw new Error(
+                  `Swap failed: ${t('Try again with more gas token balance.')} ${transactionErrorToUserReadableMessage(
+                    error,
+                    t,
+                  )}`,
+                )
+              }
+
               throw new Error(`Swap failed: ${transactionErrorToUserReadableMessage(error, t)}`)
             }
           })
@@ -249,6 +279,9 @@ export default function useSendSwapTransaction(
     recipient,
     addTransaction,
     type,
+    sendPaymasterTransaction,
+    isPaymasterAvailable,
+    isPaymasterTokenActive,
   ])
 }
 

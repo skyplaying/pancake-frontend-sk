@@ -1,5 +1,109 @@
 # @pancakeswap/position-managers
 
+## 0.1.41
+
+### Patch Changes
+
+- Updated dependencies [36f8955]
+  - @pancakeswap/sdk@5.8.10
+  - @pancakeswap/tokens@0.6.29
+  - @pancakeswap/v3-sdk@3.8.13
+
+## 0.1.40
+
+### Patch Changes
+
+- @pancakeswap/sdk@5.8.9
+- @pancakeswap/token-lists@0.0.14
+- @pancakeswap/v3-sdk@3.8.12
+- @pancakeswap/tokens@0.6.28
+
+## 0.1.39
+
+### Patch Changes
+
+- Updated dependencies [8218dbf]
+  - @pancakeswap/tokens@0.6.27
+
+## 0.1.38
+
+### Patch Changes
+
+- Updated dependencies [f3e8a77]
+- Updated dependencies [72fb1db]
+  - @pancakeswap/token-lists@0.0.13
+  - @pancakeswap/tokens@0.6.26
+
+## 0.1.37
+
+### Patch Changes
+
+- Updated dependencies [6d4ecf0]
+  - @pancakeswap/tokens@0.6.25
+
+## 0.1.36
+
+### Patch Changes
+
+- Updated dependencies [103dd63]
+- Updated dependencies [c6e9e02]
+  - @pancakeswap/tokens@0.6.24
+
+## 0.1.35
+
+### Patch Changes
+
+- @pancakeswap/sdk@5.8.8
+- @pancakeswap/token-lists@0.0.12
+- @pancakeswap/v3-sdk@3.8.11
+- @pancakeswap/tokens@0.6.23
+
+## 0.1.34
+
+### Patch Changes
+
+- Updated dependencies [911d107]
+  - @pancakeswap/v3-sdk@3.8.10
+
+## 0.1.33
+
+### Patch Changes
+
+- Updated dependencies [fe96bb1]
+  - @pancakeswap/v3-sdk@3.8.9
+
+## 0.1.32
+
+### Patch Changes
+
+- Updated dependencies [4628ab7]
+- Updated dependencies [8f573cf]
+  - @pancakeswap/tokens@0.6.22
+
+## 0.1.31
+
+### Patch Changes
+
+- Updated dependencies [9a16780]
+  - @pancakeswap/chains@0.4.6
+  - @pancakeswap/sdk@5.8.7
+  - @pancakeswap/tokens@0.6.21
+  - @pancakeswap/v3-sdk@3.8.8
+  - @pancakeswap/token-lists@0.0.11
+
+## 0.1.30
+
+### Patch Changes
+
+- Updated dependencies [b9c91d1]
+- Updated dependencies [5fa28e0]
+- Updated dependencies [95cfa0c]
+  - @pancakeswap/chains@0.4.5
+  - @pancakeswap/tokens@0.6.20
+  - @pancakeswap/sdk@5.8.6
+  - @pancakeswap/v3-sdk@3.8.7
+  - @pancakeswap/token-lists@0.0.11
+
 ## 0.1.29
 
 ### Patch Changes

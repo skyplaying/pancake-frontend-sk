@@ -1,5 +1,5 @@
-import React, { cloneElement, Children, ReactElement } from "react";
-import { styled, DefaultTheme } from "styled-components";
+import React, { Children, cloneElement, ReactElement } from "react";
+import { DefaultTheme, styled } from "styled-components";
 import { space } from "styled-system";
 import { scales, variants } from "../Button/types";
 import { ButtonMenuProps } from "./types";
@@ -19,12 +19,19 @@ const getBorderColor = ({ theme, variant }: StyledButtonMenuProps) => {
 const StyledButtonMenu = styled.div.withConfig({
   shouldForwardProp: (props) => !["fullWidth"].includes(props),
 })<StyledButtonMenuProps>`
-  background-color: ${getBackgroundColor};
+  ${(props) => {
+    if (props.variant === variants.TEXT) {
+      return "";
+    }
+    return `
+    background-color: ${getBackgroundColor(props)};
+    border: 1px solid ${getBorderColor(props)};
+    `;
+  }}
   border-radius: 16px;
   display: ${({ fullWidth }) => (fullWidth ? "flex" : "inline-flex")};
-  border: 1px solid ${getBorderColor};
   width: ${({ fullWidth }) => (fullWidth ? "100%" : "auto")};
-
+  align-items: center;
   & > button,
   & > a {
     flex: ${({ fullWidth }) => (fullWidth ? 1 : "auto")};
@@ -32,7 +39,7 @@ const StyledButtonMenu = styled.div.withConfig({
 
   & > button + button,
   & > a + a {
-    margin-left: 2px; // To avoid focus shadow overlap
+    margin-left: ${({ noButtonMargin }) => (noButtonMargin ? "0px" : "2px")}; // To avoid focus shadow overlap
   }
 
   & > button,

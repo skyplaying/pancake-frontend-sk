@@ -1,35 +1,62 @@
-import { ChainId } from '@pancakeswap/chains'
+import { useRouter } from 'next/router'
 import { useTranslation } from '@pancakeswap/localization'
 import { useToast } from '@pancakeswap/uikit'
-import replaceBrowserHistory from '@pancakeswap/utils/replaceBrowserHistory'
 import { CHAIN_QUERY_NAME } from 'config/chains'
 import { ExtendEthereum } from 'global'
 import { useCallback, useMemo } from 'react'
 import { useAppDispatch } from 'state'
 import { clearUserStates } from 'utils/clearUserStates'
 import { useAccount, useSwitchChain } from 'wagmi'
-import { useSessionChainId } from './useSessionChainId'
+import { useAtom } from 'jotai/index'
+import { queryChainIdAtom } from 'hooks/useActiveChainId'
+import { EXCHANGE_PAGE_PATHS } from 'config/constants/exchange'
+import { getHashFromRouter } from 'utils/getHashFromRouter'
 import { useSwitchNetworkLoading } from './useSwitchNetworkLoading'
 
 export function useSwitchNetworkLocal() {
-  const [, setSessionChainId] = useSessionChainId()
+  const [, setQueryChainId] = useAtom(queryChainIdAtom)
   const dispatch = useAppDispatch()
+  const router = useRouter()
 
   const isBloctoMobileApp = useMemo(() => {
     return typeof window !== 'undefined' && Boolean((window.ethereum as ExtendEthereum)?.isBlocto)
   }, [])
 
   return useCallback(
-    (chainId: number) => {
-      replaceBrowserHistory('chain', chainId === ChainId.BSC ? null : CHAIN_QUERY_NAME[chainId])
-      setSessionChainId(chainId)
+    (newChainId: number) => {
+      const { chain: queryChainName, chainId: queryChainId, persistChain } = router.query
+      if (persistChain) return
+      const newChainQueryName = CHAIN_QUERY_NAME[newChainId]
+      const chainQueryName = queryChainName || CHAIN_QUERY_NAME[queryChainId as string]
+      const removeQueriesFromPath =
+        newChainQueryName !== chainQueryName &&
+        EXCHANGE_PAGE_PATHS.some((item) => {
+          return router.pathname === '/' || router.pathname.startsWith(item)
+        })
+      const uriHash = getHashFromRouter(router)?.[0]
+      const { chainId: _chainId, ...omittedQuery } = router.query
+      router.replace(
+        {
+          pathname: router.pathname,
+          query: {
+            ...(!removeQueriesFromPath && omittedQuery),
+            chain: newChainQueryName,
+          },
+          ...(uriHash && { hash: uriHash }),
+        },
+        undefined,
+        {
+          shallow: true,
+        },
+      )
+      setQueryChainId(newChainId)
       // Blocto in-app browser throws change event when no account change which causes user state reset therefore
       // this event should not be handled to avoid unexpected behaviour.
       if (!isBloctoMobileApp) {
-        clearUserStates(dispatch, { chainId, newChainId: chainId })
+        clearUserStates(dispatch, { chainId: newChainId, newChainId })
       }
     },
-    [dispatch, isBloctoMobileApp, setSessionChainId],
+    [dispatch, isBloctoMobileApp, setQueryChainId, router],
   )
 }
 

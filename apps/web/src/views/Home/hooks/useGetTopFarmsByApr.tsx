@@ -1,14 +1,15 @@
-import { useState, useEffect } from 'react'
-import { useFarms } from 'state/farms/hooks'
+import { getLegacyFarmConfig } from '@pancakeswap/farms'
+import { useQuery } from '@tanstack/react-query'
+import { useActiveChainId } from 'hooks/useActiveChainId'
 import { useCakePrice } from 'hooks/useCakePrice'
+import orderBy from 'lodash/orderBy'
+import { fetchV3FarmsAvgInfo } from 'queries/farms'
+import { useEffect, useState } from 'react'
 import { useAppDispatch } from 'state'
 import { fetchFarmsPublicDataAsync } from 'state/farms'
-import { getFarmApr } from 'utils/apr'
-import orderBy from 'lodash/orderBy'
-import { getFarmConfig } from '@pancakeswap/farms/constants'
-import { useActiveChainId } from 'hooks/useActiveChainId'
+import { useFarms } from 'state/farms/hooks'
 import { useFarmsV3 } from 'state/farmsV3/hooks'
-import { useQuery } from '@tanstack/react-query'
+import { getFarmApr } from 'utils/apr'
 
 const useGetTopFarmsByApr = (isIntersecting: boolean) => {
   const dispatch = useAppDispatch()
@@ -22,7 +23,7 @@ const useGetTopFarmsByApr = (isIntersecting: boolean) => {
       version: 2 | 3
     } | null)[]
   >(() => [null, null, null, null, null])
-  const cakePriceBusd = useCakePrice()
+  const cakePrice = useCakePrice()
   const { chainId } = useActiveChainId()
 
   const { status: fetchStatus, isFetching } = useQuery({
@@ -30,9 +31,28 @@ const useGetTopFarmsByApr = (isIntersecting: boolean) => {
 
     queryFn: async () => {
       if (!chainId) return undefined
-      const farmsConfig = await getFarmConfig(chainId)
+      const farmsConfig = await getLegacyFarmConfig(chainId)
       const activeFarms = farmsConfig?.filter((farm) => farm.pid !== 0)
       return dispatch(fetchFarmsPublicDataAsync({ pids: activeFarms?.map((farm) => farm.pid) ?? [], chainId }))
+    },
+
+    enabled: Boolean(isIntersecting && chainId),
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+  })
+
+  const { data: farmsV3Aprs } = useQuery({
+    queryKey: [chainId, 'farmsV3Apr'],
+
+    queryFn: async () => {
+      if (!chainId) return undefined
+      const farmAvgInfo = await fetchV3FarmsAvgInfo(chainId)
+      return Object.keys(farmAvgInfo).reduce((acc, key) => {
+        const tokenData = farmAvgInfo[key]
+        // eslint-disable-next-line no-param-reassign
+        acc[key] = parseFloat(tokenData.apr7d.toFixed(2))
+        return acc
+      }, {} as Record<string, number>)
     },
 
     enabled: Boolean(isIntersecting && chainId),
@@ -57,10 +77,11 @@ const useGetTopFarmsByApr = (isIntersecting: boolean) => {
         const { cakeRewardsApr, lpRewardsApr } = getFarmApr(
           chainId,
           farm.poolWeight,
-          cakePriceBusd,
+          cakePrice,
           totalLiquidity,
           farm.lpAddress,
           regularCakePerBlock,
+          farm.lpRewardsApr,
         )
         return { ...farm, apr: cakeRewardsApr, lpRewardsApr, version: 2 as const }
       })
@@ -70,8 +91,7 @@ const useGetTopFarmsByApr = (isIntersecting: boolean) => {
         .map((f) => ({
           ...f,
           apr: f.cakeApr ? +f.cakeApr : Number.NaN,
-          // lpRewardsApr missing
-          lpRewardsApr: 0,
+          lpRewardsApr: farmsV3Aprs?.[f.lpAddress] ?? 0,
           version: 3 as const,
         }))
 
@@ -82,7 +102,7 @@ const useGetTopFarmsByApr = (isIntersecting: boolean) => {
       )
       setTopFarms(sortedByApr.slice(0, 5))
     }
-  }, [cakePriceBusd, chainId, farms, farmsV3.farmsWithPrice, fetchStatus, isLoading, regularCakePerBlock])
+  }, [cakePrice, chainId, farms, farmsV3.farmsWithPrice, fetchStatus, isLoading, regularCakePerBlock, farmsV3Aprs])
   return { topFarms, fetched: fetchStatus === 'success' && !isFetching, chainId }
 }
 

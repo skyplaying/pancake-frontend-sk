@@ -1,10 +1,12 @@
 import 'utils/workerPolyfill'
 
+import { findBestTrade } from '@pancakeswap/routing-sdk'
 import { SmartRouter, V4Router } from '@pancakeswap/smart-router'
 import { Call } from 'state/multicall/actions'
 import { fetchChunk } from 'state/multicall/fetchChunk'
 import { getLogger } from 'utils/datadog'
 import { createViemPublicClientGetter } from 'utils/viem'
+import { toRoutingSDKPool, toSerializableV4Trade } from 'utils/convertTrade'
 
 const { parseCurrency, parseCurrencyAmount, parsePool, serializeTrade } = SmartRouter.Transformer
 
@@ -234,28 +236,38 @@ addEventListener('message', (event: MessageEvent<WorkerEvent>) => {
       ? BigInt(gasPriceWei)
       : async () => BigInt((await onChainProvider({ chainId }).getGasPrice()).toString())
 
-    V4Router.getBestTrade(currencyAAmount, currencyB, tradeType, {
+    const initializedPools = pools.map(toRoutingSDKPool)
+
+    findBestTrade({
+      amount: currencyAAmount,
+      quoteCurrency: currencyB,
+      tradeType,
       gasPriceWei: gasPrice,
+      candidatePools: initializedPools,
       maxHops,
       maxSplits,
-      candidatePools: pools,
-      signal: abortController.signal,
     })
-      .then((res) => {
+      .then((t) => {
+        if (!t) {
+          throw new Error('No valid trade route found')
+        }
+        const { graph: _, ...trade } = t
+
+        const v4Trade = toSerializableV4Trade(trade)
         postMessage([
           id,
           {
             success: true,
-            result: res && V4Router.Transformer.serializeTrade(res),
+            result: v4Trade,
           },
         ])
       })
-      .catch((err) => {
+      .catch((e) => {
         postMessage([
           id,
           {
             success: false,
-            error: err.message,
+            error: e.message,
           },
         ])
       })

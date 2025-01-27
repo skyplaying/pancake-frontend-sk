@@ -17,7 +17,7 @@ import {
   scrollSepolia,
   sepolia,
   zkSync,
-  zkSyncTestnet,
+  zksyncSepoliaTestnet,
 } from 'wagmi/chains'
 
 const ARBITRUM_NODES = [
@@ -62,7 +62,7 @@ export const SERVER_NODES = {
     ...zkSync.rpcUrls.default.http,
     getNodeRealUrl(ChainId.ZKSYNC, process.env.SERVER_NODE_REAL_API_ETH) || '',
   ],
-  [ChainId.ZKSYNC_TESTNET]: zkSyncTestnet.rpcUrls.default.http,
+  [ChainId.ZKSYNC_TESTNET]: zksyncSepoliaTestnet.rpcUrls.default.http,
   [ChainId.LINEA]: linea.rpcUrls.default.http,
   [ChainId.LINEA_TESTNET]: [
     'https://rpc.goerli.linea.build',
@@ -97,7 +97,10 @@ export const PUBLIC_NODES: Record<ChainId, string[] | readonly string[]> = {
     'https://bsc-dataseed1.defibit.io',
     'https://bsc-dataseed1.binance.org',
   ].filter(notEmpty),
-  [ChainId.BSC_TESTNET]: ['https://data-seed-prebsc-1-s1.binance.org:8545'],
+  [ChainId.BSC_TESTNET]: [
+    getNodeRealUrl(ChainId.BSC_TESTNET, process.env.SERVER_NODE_REAL_API_ETH) || '',
+    'https://data-seed-prebsc-1-s1.binance.org:8545',
+  ].filter(notEmpty),
   [ChainId.ETHEREUM]: [
     getNodeRealUrl(ChainId.ETHEREUM, process.env.NEXT_PUBLIC_NODE_REAL_API_ETH) || '',
     process.env.NEXT_PUBLIC_NODIES_ETH || '',
@@ -129,9 +132,10 @@ export const PUBLIC_NODES: Record<ChainId, string[] | readonly string[]> = {
   ],
   [ChainId.ZKSYNC]: [
     ...zkSync.rpcUrls.default.http,
+    process.env.NEXT_PUBLIC_QUICK_NODE_ZKSYNC || '',
     getNodeRealUrl(ChainId.ZKSYNC, process.env.NEXT_PUBLIC_NODE_REAL_API_ETH) || '',
   ],
-  [ChainId.ZKSYNC_TESTNET]: zkSyncTestnet.rpcUrls.default.http,
+  [ChainId.ZKSYNC_TESTNET]: zksyncSepoliaTestnet.rpcUrls.default.http,
   [ChainId.LINEA]: linea.rpcUrls.default.http,
   [ChainId.LINEA_TESTNET]: [
     'https://rpc.goerli.linea.build',

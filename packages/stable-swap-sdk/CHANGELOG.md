@@ -1,5 +1,98 @@
 # @pancakeswap/stable-swap-sdk
 
+## 2.0.0
+
+### Major Changes
+
+- 36f8955: Update packages
+
+### Patch Changes
+
+- @pancakeswap/tokens@0.6.29
+
+## 1.1.4
+
+### Patch Changes
+
+- Updated dependencies [176eb10]
+- Updated dependencies [176eb10]
+  - @pancakeswap/swap-sdk-core@1.3.0
+  - @pancakeswap/tokens@0.6.28
+
+## 1.1.3
+
+### Patch Changes
+
+- Updated dependencies [8218dbf]
+  - @pancakeswap/tokens@0.6.27
+
+## 1.1.2
+
+### Patch Changes
+
+- Updated dependencies [72fb1db]
+  - @pancakeswap/tokens@0.6.26
+
+## 1.1.1
+
+### Patch Changes
+
+- 75c16bc: Added new ss pair
+
+## 1.1.0
+
+### Minor Changes
+
+- 206fc8d: Introduce stable swap on eth mainnet
+
+### Patch Changes
+
+- Updated dependencies [6d4ecf0]
+  - @pancakeswap/tokens@0.6.25
+
+## 1.0.16
+
+### Patch Changes
+
+- 103dd63: List USDT-BITU stable pool
+- Updated dependencies [103dd63]
+- Updated dependencies [c6e9e02]
+  - @pancakeswap/tokens@0.6.24
+
+## 1.0.15
+
+### Patch Changes
+
+- Updated dependencies [f551e5e]
+  - @pancakeswap/swap-sdk-core@1.2.0
+  - @pancakeswap/tokens@0.6.23
+
+## 1.0.14
+
+### Patch Changes
+
+- Updated dependencies [4628ab7]
+- Updated dependencies [8f573cf]
+  - @pancakeswap/tokens@0.6.22
+
+## 1.0.13
+
+### Patch Changes
+
+- Updated dependencies [9a16780]
+  - @pancakeswap/chains@0.4.6
+  - @pancakeswap/tokens@0.6.21
+
+## 1.0.12
+
+### Patch Changes
+
+- Updated dependencies [b9c91d1]
+- Updated dependencies [5fa28e0]
+- Updated dependencies [95cfa0c]
+  - @pancakeswap/chains@0.4.5
+  - @pancakeswap/tokens@0.6.20
+
 ## 1.0.11
 
 ### Patch Changes
